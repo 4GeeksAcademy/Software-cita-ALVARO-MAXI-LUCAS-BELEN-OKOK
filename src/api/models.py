@@ -13,6 +13,7 @@ class User(db.Model):
     role = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
+    phone = db.Column(db.Integer, nullable=False)
 
     # Relación uno a muchos: un usuario puede tener múltiples citas
     dates = db.relationship('Date', backref='user', lazy=True)
