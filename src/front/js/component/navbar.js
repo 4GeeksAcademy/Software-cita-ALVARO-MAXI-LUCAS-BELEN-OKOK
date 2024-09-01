@@ -1,19 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Navbar as BootstrapNavbar, Nav, Container } from "react-bootstrap";
 
-export const Navbar = () => {
-	return (
-		<nav className="navbar navbar-light bg-light">
-			<div className="container">
-				<Link to="/">
-					<span className="navbar-brand mb-0 h1">React Boilerplate</span>
-				</Link>
-				<div className="ml-auto">
-					<Link to="/demo">
-						<button className="btn btn-primary">Check the Context in action</button>
-					</Link>
-				</div>
-			</div>
-		</nav>
-	);
+export const CustomNavbar = () => {
+  return (
+    <BootstrapNavbar bg="dark" variant="dark" expand="lg">
+      <Container>
+        <BootstrapNavbar.Brand href="/">Oftalmologia</BootstrapNavbar.Brand>
+        <Nav className="ml-auto">
+          <Nav.Link href="/services">Services</Nav.Link>
+          <Nav.Link href="/appointment">Appointment</Nav.Link>
+          <Nav.Link href="/testimonials">Testimonials</Nav.Link>
+          <Nav.Link href="/contact">Contact</Nav.Link>
+          <Nav.Link href="/login">Login</Nav.Link>
+          <Nav.Link href="/register">Register</Nav.Link>
+        </Nav>
+      </Container>
+    </BootstrapNavbar>
+  );
 };
