@@ -11,6 +11,7 @@ class User(db.Model):
     document_number = db.Column(db.String(200), nullable=False)
     address = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(200), nullable=False)
+    speciality = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), nullable=False)
     phone = db.Column(db.Integer, nullable=False)
@@ -31,6 +32,8 @@ class User(db.Model):
             "document_number": self.document_number,
             "address": self.address,
             "role": self.role,
+            "phone": self.phone,
+            "speciality": self.speciality
         }
 
 class Date(db.Model):
