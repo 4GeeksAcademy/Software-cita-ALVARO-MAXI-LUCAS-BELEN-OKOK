@@ -2,6 +2,8 @@ import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import rigoImageUrl from "../../img/rigo-baby.jpg";
 import "../../styles/home.css";
+import { Link } from "react-router-dom";
+
 
 export const Home = () => {
 	const { store, actions } = useContext(Context);
@@ -9,6 +11,10 @@ export const Home = () => {
 	return (
 		<div className="text-center mt-5">
 			<h1>Bienvenido a Nuestra Clinica</h1>
+			<nav>
+				<Link to="/login"><span>LOGEATE</span> </Link>
+			</nav>
+			
 			<p>
 				<img src={rigoImageUrl} />
 				Ofrecemos los mejores servicios medicos para el cuidado de tus ojos
