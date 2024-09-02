@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     // Función para iniciar sesión
     const login = async (email, password) => {
         try {
-            const response = await fetch('http://localhost:5000/login', {
+            const response = await fetch(process.env.BACKEND_URL +'/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

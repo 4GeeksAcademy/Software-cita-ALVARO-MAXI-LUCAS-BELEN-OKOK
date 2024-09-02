@@ -25,7 +25,7 @@ export const Signup = () => {
             return;
         }
 
-        const success = await register(name, lastName, documentType, documentNumber, address, role, speciality, email, password, phone);
+        const success = await register(name, lastName, documentType, documentNumber, address, email, password, phone);
         if (success) {
             navigate("/login");  // Redirige al login después del registro exitoso
         } else {
@@ -95,7 +95,7 @@ export const Signup = () => {
                         className="form-control" 
                         value={role} 
                         onChange={(e) => setRole(e.target.value)} 
-                        required 
+                        disabled 
                     />
                 </div>
                 <div className="mb-4">
@@ -105,7 +105,7 @@ export const Signup = () => {
                         className="form-control" 
                         value={speciality} 
                         onChange={(e) => setSpeciality(e.target.value)} 
-                        required 
+                        disabled 
                     />
                 </div>
                 <div className="mb-4">

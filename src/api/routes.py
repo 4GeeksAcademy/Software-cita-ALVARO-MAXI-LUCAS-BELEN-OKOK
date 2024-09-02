@@ -10,11 +10,16 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
+
 api = Blueprint('api', __name__)
 
-CORS(api)
+CORS(api, resources={r"/*": {"origins": "*"}})
 
             #RUTAS CORRESPONDIENTES A LOS USUARIOS
+
+@api.route('/ping', methods=['GET'])
+def ping():
+    return "pong"
 
 @api.route('/users', methods=['GET'])
 def get_users():
@@ -27,31 +32,27 @@ def get_users():
 
     return jsonify(response_body), 200
 
-# Creamos el signup para crear usuarios
 @api.route('/signup', methods=['POST'])
 def create_user():
+    """ 
+    Creamos el signup para crear usuarios.
+
+    :return: HTTP 200
+    """
+
     body = request.get_json()
-    new_user = User(
-        id = body['id'],
-        name = body['name'], 
-        last_name = body['last_name'], 
-        document_type = body['document_type'], 
-        document_number = body['document_number'], 
-        address = body['address'], 
-        role = body['role'], 
-        speciality = body['speciality']
-        email = body['email'], 
-        password = body['password'], 
-        phone = body['phone'])
+
+    new_user = User(**body)
     
     db.session.add(new_user)
     db.session.commit()
 
-    response_body = {
-        "message": "User created successfully!"
-    }
+    
 
-    return jsonify(response_body), 200
+    
+
+    return jsonify({"message": "User created successfully!"}), 200
+
 
 @api.route('/login' , methods=['POST'])
 def login():
