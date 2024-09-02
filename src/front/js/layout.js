@@ -20,6 +20,7 @@ import {TestimonialProvider} from "./store/TestimonialContext";
 import {protectroute} from "../js/pages/protectroute";
 import { Login } from "../js/pages/login";
 import { Signup } from "../js/pages/signup";
+import { RegisterProvider } from "./store/RegisterContext";
 
 
 //create your first component
@@ -32,6 +33,7 @@ const Layout = () => {
 
     return (
         <div>
+            <RegisterProvider>
             <TestimonialProvider>
             <AppointmentProvider>
             <AuthProvider>
@@ -56,6 +58,7 @@ const Layout = () => {
             </AuthProvider>
             </AppointmentProvider>
             </TestimonialProvider>
+            </RegisterProvider>
         </div>
     );
 };
