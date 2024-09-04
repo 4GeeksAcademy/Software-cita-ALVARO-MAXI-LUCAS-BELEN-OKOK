@@ -1,19 +1,20 @@
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
 class User(db.Model):
     __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, autoincrement =True , primary_key=True)
     name = db.Column(db.String(300), nullable=False)
     last_name = db.Column(db.String(300), nullable=False)
     document_type = db.Column(db.String(200), nullable=False)
     document_number = db.Column(db.String(200), nullable=False)
     address = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(200), nullable=False)
-    speciality = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(200), nullable=True)
+    speciality = db.Column(db.String(200), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+    password = db.Column(db.String(300), nullable=False)
     phone = db.Column(db.Integer, nullable=False)
 
     # Relación uno a muchos: un usuario puede tener múltiples citas
@@ -21,6 +22,12 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.email}>'
+    
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
     def serialize(self):
         return {

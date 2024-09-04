@@ -5,16 +5,20 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User, Date
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
 api = Blueprint('api', __name__)
+JWTManager()
 
-CORS(api)
+
+
+CORS(api, resources={r"/*": {"origins": "*"}})
 
             #RUTAS CORRESPONDIENTES A LOS USUARIOS
+
+@api.route('/ping', methods=['GET'])
+def ping():
+    return "pong"
 
 @api.route('/users', methods=['GET'])
 def get_users():
@@ -27,52 +31,47 @@ def get_users():
 
     return jsonify(response_body), 200
 
-# Creamos el signup para crear usuarios
 @api.route('/signup', methods=['POST'])
 def create_user():
+    """ 
+    Creamos el signup para crear usuarios.
+
+    :return: HTTP 200
+    """
+
     body = request.get_json()
-    new_user = User(
-        id = body['id'],
-        name = body['name'], 
-        last_name = body['last_name'], 
-        document_type = body['document_type'], 
-        document_number = body['document_number'], 
-        address = body['address'], 
-        role = body['role'], 
-        speciality = body['speciality']
-        email = body['email'], 
-        password = body['password'], 
-        phone = body['phone'])
+
+    new_user = User(**body)
+
+    new_user.set_password(body.get('password'))
     
     db.session.add(new_user)
     db.session.commit()
 
-    response_body = {
-        "message": "User created successfully!"
-    }
+    
 
-    return jsonify(response_body), 200
+    
+
+    return jsonify({"message": "User created successfully!"}), 200
+
 
 @api.route('/login' , methods=['POST'])
 def login():
     body = request.get_json()
-    email_user = body['email']
-    password_user = body['password']
+    email = body['email']
+    password = body['password']
 
-    user = User.query.filter_by(email = email_user, password = password_user).first()
-    
-    if user == None:
+    user = User.query.filter_by(email=email).first()
+    if user and user.check_password(password):
+        access_token = create_access_token(identity=email)
+
         return jsonify({
-            "message": "Incorrect username and/or password"
-        }), 401
-    access_token = create_access_token(identity = user.serialize())
+            'access_token': access_token,
+            'user': user.serialize()
+        }), 200
+    
+    return jsonify({'error': 'Credenciales inválidas'}), 401
 
-    response_body = {
-        "message": "Token created successfully",
-        "token": access_token
-    }
-
-    return jsonify(response_body), 200
 
 # Ruta para actualizar un usuario
 @api.route('/users/<int:user_id>', methods=['PUT'])
