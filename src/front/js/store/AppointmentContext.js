@@ -6,7 +6,41 @@ export const AppointmentContext = createContext();
 // Proveedor del contexto de citas médicas
 export const AppointmentProvider = ({ children }) => {
     const [appointments, setAppointments] = useState([]);
+    const [appointmentsError, setAppointmentsError] = useState(null);
 
+
+    const appointment = async (speciality, doctor, datetime, reason_for_appointment, date_type) => {
+        try {
+            const response =  await fetch(process.env.BACKEND_URL + '/dates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    speciality,
+                    doctor,
+                    datetime,
+                    reason_for_appointment,
+                    date_type
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setAppointments(true);
+                return true;  // Devuelve éxito
+            } else {
+                setAppointmentsError(data.message);
+                return false;  // Devuelve fracaso
+            }
+        } catch (error) {
+            console.error('Error durante la obtención de cita', error);
+            return false;
+        }
+    };
+
+   
     // Cargar citas desde localStorage al montar el componente
     useEffect(() => {
         const storedAppointments = localStorage.getItem('appointments');
@@ -31,7 +65,7 @@ export const AppointmentProvider = ({ children }) => {
     };
 
     return (
-        <AppointmentContext.Provider value={{ appointments, addAppointment, removeAppointment }}>
+        <AppointmentContext.Provider value={{ appointment, addAppointment, removeAppointment, appointmentsError }}>
             {children}
         </AppointmentContext.Provider>
     );
