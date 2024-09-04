@@ -6,10 +6,37 @@ from api.models import db, User, Date
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 api = Blueprint('api', __name__)
 JWTManager()
 
+# Obtén la API Key de SendGrid desde las variables de entorno
+
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+print(SENDGRID_API_KEY,"hola")
+
+def send_email(to_email, subject, content):
+    message = Mail(
+        from_email='luck_caneo@hotmail.com',  
+        to_emails=to_email,
+        subject=subject,
+        html_content=content
+    )
+    try:
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e)
 
 
 CORS(api, resources={r"/*": {"origins": "*"}})
@@ -47,6 +74,16 @@ def create_user():
     
     db.session.add(new_user)
     db.session.commit()
+
+       # Enviar correo de bienvenida al nuevo usuario
+    send_email(
+        to_email="belengallardop@gmail.com",
+        subject="Bienvenido a nuestra plataforma de oftalmologia",
+        content=f"<p>Hola belen,</p><p>Gracias por registrarte en nuestra plataforma.</p>"
+        
+    )
+    
+
 
     
 
