@@ -7,7 +7,7 @@ export const RegisterProvider = ({ children }) => {
     const [registered, setRegistered] = useState(false);
 
     // Función para registrar un nuevo usuario
-    const register = async (name, last_name, document_type, document_number, address,  email, password, phone) => {
+    const register = async (name, last_name, document_type, document_number, address, email, password, phone) => {
         try {
             const response =  await fetch(process.env.BACKEND_URL + '/signup', {
                 method: 'POST',
@@ -20,8 +20,6 @@ export const RegisterProvider = ({ children }) => {
                     document_type,
                     document_number,
                     address,
-                    role,
-                    speciality,
                     email,
                     password,
                     phone,
