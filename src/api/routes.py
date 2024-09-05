@@ -32,10 +32,11 @@ def send_email(to_email, subject, content):
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        print("Respuesta de SendGrid:", response.status_code)
+        print("Cuerpo de la respuesta:", response.body)
+        print("Encabezados de la respuesta:", response.headers)
     except Exception as e:
+        print("Error al enviar el correo electrónico:", e)
         print(e)
 
 
