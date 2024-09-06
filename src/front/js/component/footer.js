@@ -5,12 +5,7 @@ import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/f
 export const Footer = () => (
   <footer className="footer mt-auto py-4 text-center bg-dark text-white">
     <Container>
-      <p className="mb-2">
-        Made with <i className="fa fa-heart text-danger" /> by{" "}
-        <a href="http://www.4geeksacademy.com" className="text-white font-weight-bold" target="_blank" rel="noopener noreferrer">
-          4Geeks Academy
-        </a>
-      </p>
+
       <div className="social-icons d-flex justify-content-center mb-3">
         <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-white mx-2">
           <FaFacebookF />

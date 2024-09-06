@@ -68,3 +68,24 @@ class Date(db.Model):
             "date_type": self.date_type,
             "user_id": self.user_id
         }
+
+class Availability(db.Model):
+    __tablename__ = 'availability'
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    is_available = db.Column(db.Boolean, default=True)
+
+    doctor = db.relationship('User', backref='availabilities')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "doctor_id": self.doctor_id,
+            "date": self.date.isoformat(),
+            "start_time": self.start_time.strftime("%H:%M"),
+            "end_time": self.end_time.strftime("%H:%M"),
+            "is_available": self.is_available
+        }
