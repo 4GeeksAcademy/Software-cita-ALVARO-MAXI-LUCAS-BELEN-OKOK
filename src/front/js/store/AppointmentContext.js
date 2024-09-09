@@ -9,15 +9,18 @@ export const AppointmentProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const getToken = () => localStorage.getItem('token'); // Extract token retrieval logic
+
     const getAppointments = async () => {
         setLoading(true);
-        // Obtén el token JWT desde donde lo almacenes, por ejemplo, localStorage
-        const token = localStorage.getItem('token');  // Asegúrate de que el token esté en localStorage
+        const token = getToken();
         try {
-            const response = await fetch(process.env.BACKEND_URL + '/dates', {
+            const response = await fetch(`${process.env.BACKEND_URL}/dates`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
             const data = await response.json();
             setAppointments(data);
@@ -30,10 +33,14 @@ export const AppointmentProvider = ({ children }) => {
 
     const addAppointment = async (appointment) => {
         setLoading(true);
+        const token = getToken();
         try {
-            const response = await fetch(process.env.BACKEND_URL + '/dates', {
+            const response = await fetch(`${process.env.BACKEND_URL}/dates`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(appointment),
             });
             const data = await response.json();
@@ -47,8 +54,14 @@ export const AppointmentProvider = ({ children }) => {
 
     const removeAppointment = async (id) => {
         setLoading(true);
+        const token = getToken();
         try {
-            await fetch(process.env.BACKEND_URL + `/dates/${id}`, { method: 'DELETE' });
+            await fetch(`${process.env.BACKEND_URL}/dates/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             setAppointments(appointments.filter(appointment => appointment.id !== id));
         } catch (error) {
             setError(error);
@@ -59,10 +72,14 @@ export const AppointmentProvider = ({ children }) => {
 
     const getAvailability = async () => {
         setLoading(true);
+        const token = getToken();
         try {
-            const response = await fetch(process.env.BACKEND_URL + '/availability', {
+            const response = await fetch(`${process.env.BACKEND_URL}/availability`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
             const data = await response.json();
             setAvailability(data);
@@ -75,33 +92,29 @@ export const AppointmentProvider = ({ children }) => {
 
     const getDoctors = async () => {
         setLoading(true);
+        const token = getToken();
         try {
-            // Obtén el token JWT desde donde lo almacenes, por ejemplo, localStorage
-            const token = localStorage.getItem('token');  // Asegúrate de que el token esté en localStorage
-
-            const response = await fetch(process.env.BACKEND_URL + '/doctors', {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctors`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`  // Agrega el token al encabezado
-                },
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
-            // Verifica si la respuesta fue exitosa
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
             const data = await response.json();
             setDoctors(data);
-            console.log(data)
+            console.log(data);
         } catch (error) {
             setError(error);
         } finally {
             setLoading(false);
         }
     };
-
 
     useEffect(() => {
         getAppointments();

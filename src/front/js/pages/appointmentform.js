@@ -9,10 +9,12 @@ export const AppointmentForm = () => {
   const [appointment, setAppointment] = useState({
     name: '',
     email: '',
-    doctor: '',
+    doctor_id: '',
     date: null, // Usamos un objeto de fecha
-    time: '',
-    type: 'in-person'
+    especialidad: 'cirujano',
+    datetime: '',
+    type: 'in-person',
+
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -37,6 +39,10 @@ export const AppointmentForm = () => {
     setAppointment({ ...appointment, [e.target.name]: e.target.value });
   };
 
+  const handleTimeChange = (e) => {
+    setAppointment({ ...appointment, time: e.target.value });
+  };
+
   const handleDateChange = (date) => {
     setAppointment({ ...appointment, date });
   };
@@ -44,31 +50,46 @@ export const AppointmentForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Formatear la fecha antes de enviarla
-    const formattedAppointment = {
-      ...appointment,
-      date: appointment.date.toISOString().split('T')[0],
-    };
+    // Verificar que la fecha y la hora están definidas
+    if (appointment.date && appointment.time) {
+      // Formatear la fecha y la hora
+      const dateStr = appointment.date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const timeStr = appointment.time; // HH:MM:SS
+      const datetimeStr = `${dateStr}T${timeStr}:00`; // Combinar fecha y hora
 
-    // Enviar la cita al contexto
-    await addAppointment(formattedAppointment);
+      // Preparar el objeto para enviar
+      const formattedAppointment = {
+        ...appointment,
+        datetime: datetimeStr // Usar `datetime` en lugar de `date`
+      };
 
-    // Mostrar un mensaje de éxito
-    setSuccessMessage('Cita solicitada exitosamente.');
+      try {
+        // Enviar la cita al contexto
+        await addAppointment(formattedAppointment);
 
-    // Reiniciar el formulario después de enviar la cita
-    setAppointment({
-      name: '',
-      email: '',
-      doctor: '',
-      date: null,
-      time: '',
-      type: 'in-person'
-    });
+        // Mostrar un mensaje de éxito
+        setSuccessMessage('Cita solicitada exitosamente.');
 
-    // Limpiar el mensaje de éxito después de unos segundos
-    setTimeout(() => setSuccessMessage(''), 3000);
+        // Reiniciar el formulario después de enviar la cita
+        setAppointment({
+          name: '',
+          email: '',
+          doctor_id: '',
+          date: null,
+          time: '',
+          type: 'in-person'
+        });
+
+        // Limpiar el mensaje de éxito después de unos segundos
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('Error al solicitar la cita:', error);
+      }
+    } else {
+      console.error('Fecha y hora son necesarias');
+    }
   };
+
 
   return (
     <Container className="mt-4">
@@ -117,9 +138,9 @@ export const AppointmentForm = () => {
           <Form.Label>Doctor</Form.Label>
           <Form.Control
             as="select"
-            name="doctor"
-            value={appointment.doctor}
-            onChange={handleChange}
+            name="doctor_id"  // Usa 'doctor_id' como el nombre del campo
+            value={appointment.doctor_id}  // Usa 'doctor_id' como el valor
+            onChange={handleChange}  // Actualiza el valor del estado
             required
           >
             <option value="">Seleccione un doctor</option>
@@ -131,6 +152,7 @@ export const AppointmentForm = () => {
           </Form.Control>
         </Form.Group>
 
+
         <Form.Group controlId="formDate">
           <Form.Label>Fecha</Form.Label>
           <DatePicker
@@ -140,6 +162,16 @@ export const AppointmentForm = () => {
             className="form-control"
             minDate={new Date()}
             placeholderText="Seleccione una fecha"
+            required
+          />
+        </Form.Group>
+        <Form.Group controlId="formTime">
+          <Form.Label>Hora</Form.Label>
+          <Form.Control
+            type="time"
+            name="time"
+            value={appointment.time}
+            onChange={handleTimeChange}
             required
           />
         </Form.Group>

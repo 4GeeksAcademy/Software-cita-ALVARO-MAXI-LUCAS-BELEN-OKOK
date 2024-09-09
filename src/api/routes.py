@@ -198,7 +198,7 @@ def create_date():
         # Crear la cita
         new_date = Date(
             speciality=body['speciality'],
-            doctor=body['doctor'],
+            doctor=body['doctor_id'],
             datetime=appointment_date,
             reason_for_appointment=body['reason_for_appointment'],
             date_type=body['date_type'],
