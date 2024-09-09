@@ -1,54 +1,34 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import request, jsonify, Blueprint
 from api.models import db, User, Date, Availability
-from api.utils import generate_sitemap, APIException
+from api.utils import APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 import os
 from dotenv import load_dotenv
-from datetime import datetime, time,date,timedelta
+from datetime import datetime, timedelta
+import resend
 
-
+# Cargar variables de entorno
 load_dotenv()
 
+# Configurar API Key de Resend
+resend.api_key = os.getenv("RESEND_API_KEY")
+
+# Crear Blueprint para la API
 api = Blueprint('api', __name__)
+
+# Configuración de JWTManager
 JWTManager()
 
-# Obtén la API Key de SendGrid desde las variables de entorno
-
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-print(SENDGRID_API_KEY,"hola")
-
-def send_email(to_email, subject, content):
-    message = Mail(
-        from_email='luck_caneo@hotmail.com',  
-        to_emails=to_email,
-        subject=subject,
-        html_content=content
-    )
-    try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
-        print("Respuesta de SendGrid:", response.status_code)
-        print("Cuerpo de la respuesta:", response.body)
-        print("Encabezados de la respuesta:", response.headers)
-    except Exception as e:
-        print("Error al enviar el correo electrónico:", e)
-        print(e)
-
-
+# Configuración de CORS
 CORS(api, resources={r"/*": {"origins": "*"}})
 
-            #RUTAS CORRESPONDIENTES A LOS USUARIOS
-
+# Ruta de ejemplo para verificar que el servidor esté corriendo
 @api.route('/ping', methods=['GET'])
 def ping():
     return "pong"
 
+# Ruta para obtener todos los usuarios
 @api.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
@@ -57,39 +37,31 @@ def get_users():
         "message": "These are all the users",
         "user": users_serialize
     }
-
     return jsonify(response_body), 200
 
+# Ruta para crear un nuevo usuario
 @api.route('/signup', methods=['POST'])
 def create_user():
-    """ 
-    Creamos el signup para crear usuarios.
-
-    :return: HTTP 200
-    """
-
     body = request.get_json()
-
     new_user = User(**body)
-
     new_user.set_password(body.get('password'))
-    
     db.session.add(new_user)
     db.session.commit()
 
-       # Enviar correo de bienvenida al nuevo usuario
-    send_email(
-        to_email="belengallardop@gmail.com",
-        subject="Bienvenido a nuestra plataforma de oftalmologia",
-        content=f"<p>Hola belen,</p><p>Gracias por registrarte en nuestra plataforma.</p>"
-        
-    )
-    
+    # Enviar correo de bienvenida usando Resend
+    params = {
+        "from": "Acme <onboarding@resend.dev>",
+        "to": "ponitsa@gmail.com",  # Asumiendo que `new_user.email` tiene el correo del usuario
+        "subject": "Welcome to Our Platform!",
+        "html": "<strong>Welcome to our platform, we're glad to have you!</strong>"
+    }
 
-
-    
-
-    
+    try:
+        r = resend.Emails.send(params)
+        print("Email sent successfully:", r)
+    except Exception as e:
+        print("Error sending email:", e)
+        return jsonify({"message": "User created, but there was an error sending the email"}), 500
 
     return jsonify({"message": "User created successfully!"}), 200
 
