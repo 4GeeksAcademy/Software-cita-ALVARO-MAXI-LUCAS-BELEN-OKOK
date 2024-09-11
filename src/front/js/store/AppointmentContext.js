@@ -115,6 +115,66 @@ export const AppointmentProvider = ({ children }) => {
             setLoading(false);
         }
     };
+    const addDoctor = async (doctor) => {
+        setLoading(true);
+        const token = getToken();
+        try {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctors`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(doctor),
+            });
+            const data = await response.json();
+            setDoctors([...doctors, data.doctor]);
+        } catch (error) {
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateDoctor = async (doctor) => {
+        setLoading(true);
+        const token = getToken();
+        try {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctors/${doctor.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(doctor),
+            });
+            const data = await response.json();
+            setDoctors(doctors.map(d => (d.id === doctor.id ? data.doctor : d)));
+        } catch (error) {
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const removeDoctor = async (id) => {
+        setLoading(true);
+        const token = getToken();
+        try {
+            await fetch(`${process.env.BACKEND_URL}/doctors/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setDoctors(doctors.filter(doctor => doctor.id !== id));
+        } catch (error) {
+            setError(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         getAppointments();
@@ -133,7 +193,11 @@ export const AppointmentProvider = ({ children }) => {
                 addAppointment,
                 removeAppointment,
                 getDoctors,
-                getAvailability
+                getAvailability,
+                addDoctor,
+                updateDoctor,
+                removeDoctor
+
             }}
         >
             {children}

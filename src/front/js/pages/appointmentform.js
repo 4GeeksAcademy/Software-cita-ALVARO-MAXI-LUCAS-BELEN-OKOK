@@ -3,6 +3,8 @@ import { Container, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { AppointmentContext } from '../store/AppointmentContext';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import '../../styles/AppointmentForm.css';
+
 
 export const AppointmentForm = () => {
   const { addAppointment, loading, error, availability, getDoctors, doctors } = useContext(AppointmentContext);
@@ -10,37 +12,26 @@ export const AppointmentForm = () => {
     name: '',
     email: '',
     doctor_id: '',
-    date: null, // Usamos un objeto de fecha
-    especialidad: 'cirujano',
-    datetime: '',
+    date: null,
     type: 'in-person',
-
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
 
-  console.log(doctors, 'doctors')
-
   // Actualizar los horarios disponibles cuando se selecciona un doctor y una fecha
   useEffect(() => {
-    if (appointment.doctor && appointment.date) {
-      const doctorAvailability = availability.find(doc => doc.doctorId === appointment.doctor);
+    if (appointment.doctor_id && appointment.date) {
+      const doctorAvailability = availability.find(doc => doc.doctorId === appointment.doctor_id);
       if (doctorAvailability) {
         const selectedDate = appointment.date.toISOString().split('T')[0];
         const timesForDate = doctorAvailability.times[selectedDate] || [];
         setAvailableTimes(timesForDate);
       }
     }
-    console.log(appointment.doctor, 'doctor')
-    console.log(appointment, 'appointment')
-  }, [appointment.doctor, appointment.date, availability]);
+  }, [appointment.doctor_id, appointment.date, availability]);
 
   const handleChange = (e) => {
     setAppointment({ ...appointment, [e.target.name]: e.target.value });
-  };
-
-  const handleTimeChange = (e) => {
-    setAppointment({ ...appointment, time: e.target.value });
   };
 
   const handleDateChange = (date) => {
@@ -50,37 +41,25 @@ export const AppointmentForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verificar que la fecha y la hora están definidas
-    if (appointment.date && appointment.time) {
-      // Formatear la fecha y la hora
-      const dateStr = appointment.date.toISOString().split('T')[0]; // YYYY-MM-DD
-      const timeStr = appointment.time; // HH:MM:SS
-      const datetimeStr = `${dateStr}T${timeStr}:00`; // Combinar fecha y hora
-
-      // Preparar el objeto para enviar
+    if (appointment.date) {
+      const dateStr = appointment.date.toISOString(); // ISO String incluye fecha y hora
       const formattedAppointment = {
         ...appointment,
-        datetime: datetimeStr // Usar `datetime` en lugar de `date`
+        datetime: dateStr
       };
 
       try {
-        // Enviar la cita al contexto
         await addAppointment(formattedAppointment);
 
-        // Mostrar un mensaje de éxito
         setSuccessMessage('Cita solicitada exitosamente.');
-
-        // Reiniciar el formulario después de enviar la cita
         setAppointment({
           name: '',
           email: '',
           doctor_id: '',
           date: null,
-          time: '',
           type: 'in-person'
         });
 
-        // Limpiar el mensaje de éxito después de unos segundos
         setTimeout(() => setSuccessMessage(''), 3000);
       } catch (error) {
         console.error('Error al solicitar la cita:', error);
@@ -90,12 +69,10 @@ export const AppointmentForm = () => {
     }
   };
 
-
   return (
-    <Container className="mt-4">
+    <Container className="mt-4 appointment-form-container">
       <h2>Solicitar Cita</h2>
 
-      {/* Mostrar un mensaje de carga */}
       {loading && (
         <div className="text-center my-3">
           <Spinner animation="border" />
@@ -103,10 +80,8 @@ export const AppointmentForm = () => {
         </div>
       )}
 
-      {/* Mostrar un mensaje de éxito */}
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
-      {/* Mostrar un mensaje de error si existe */}
       {error && <Alert variant="danger">Error: {error.message}</Alert>}
 
       <Form onSubmit={handleSubmit}>
@@ -138,9 +113,9 @@ export const AppointmentForm = () => {
           <Form.Label>Doctor</Form.Label>
           <Form.Control
             as="select"
-            name="doctor_id"  // Usa 'doctor_id' como el nombre del campo
-            value={appointment.doctor_id}  // Usa 'doctor_id' como el valor
-            onChange={handleChange}  // Actualiza el valor del estado
+            name="doctor_id"
+            value={appointment.doctor_id}
+            onChange={handleChange}
             required
           >
             <option value="">Seleccione un doctor</option>
@@ -152,49 +127,21 @@ export const AppointmentForm = () => {
           </Form.Control>
         </Form.Group>
 
-
         <Form.Group controlId="formDate">
-          <Form.Label>Fecha</Form.Label>
+          <Form.Label>Fecha y Hora</Form.Label>
           <DatePicker
             selected={appointment.date}
             onChange={handleDateChange}
-            dateFormat="yyyy-MM-dd"
-            className="form-control"
+            showTimeSelect
+            timeFormat="HH:mm"
+            timeIntervals={30}
+            dateFormat="yyyy-MM-dd h:mm aa"
+            className="form-control datepicker-custom"
             minDate={new Date()}
-            placeholderText="Seleccione una fecha"
+            placeholderText="Seleccione una fecha y hora"
             required
           />
         </Form.Group>
-        <Form.Group controlId="formTime">
-          <Form.Label>Hora</Form.Label>
-          <Form.Control
-            type="time"
-            name="time"
-            value={appointment.time}
-            onChange={handleTimeChange}
-            required
-          />
-        </Form.Group>
-
-        {availableTimes.length > 0 && (
-          <Form.Group controlId="formTime">
-            <Form.Label>Hora</Form.Label>
-            <Form.Control
-              as="select"
-              name="time"
-              value={appointment.time}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Seleccione una hora</option>
-              {availableTimes.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
-        )}
 
         <Form.Group controlId="formType">
           <Form.Label>Tipo de Cita</Form.Label>

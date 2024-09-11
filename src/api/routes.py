@@ -157,9 +157,11 @@ def get_date(date_id):
 @jwt_required()
 def create_date():
     body = request.get_json()
-    
+
+    # Opción 1: Manejar datetime con milisegundos y zona horaria (UTC)
+    appointment_date = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
+
     # Verificar disponibilidad
-    appointment_date = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S")
     availability = Availability.query.filter_by(
         doctor_id=body['doctor_id'],
         date=appointment_date.date(),
@@ -182,9 +184,9 @@ def create_date():
         db.session.add(new_date)
         db.session.commit()
         
-        return jsonify({"message": "Date created successfully", "date": new_date.serialize()}), 201
+        return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
     else:
-        return jsonify({"message": "The selected time is not available"}), 400
+        return jsonify({"message": "La hora seleccionada no está disponible"}), 400
 
 
 
@@ -254,7 +256,40 @@ def create_doctor():
     
     return jsonify({"message": "Doctor created successfully!", "doctor": new_doctor.serialize()}), 201
 
+#Eliminar Doctor
+@api.route('/doctors/<int:doctor_id>', methods=['DELETE'])
+@jwt_required()
+def delete_doctor(doctor_id):
+    doctor = User.query.get(doctor_id)
+    
+    if not doctor:
+        return jsonify({"message": "Doctor not found"}), 404
 
+    db.session.delete(doctor)
+    db.session.commit()
+    
+    return jsonify({"message": "Doctor deleted successfully"}), 200
+
+#Actualizar Doctor
+@api.route('/doctors/<int:doctor_id>', methods=['PUT'])
+@jwt_required()
+def update_doctor(doctor_id):
+    body = request.get_json()
+    doctor = User.query.get(doctor_id)
+    
+    if not doctor:
+        return jsonify({"message": "Doctor not found"}), 404
+
+    doctor.name = body.get('name', doctor.name)
+    doctor.last_name = body.get('last_name', doctor.last_name)
+    doctor.speciality = body.get('speciality', doctor.speciality)
+    doctor.email = body.get('email', doctor.email)
+    doctor.phone = body.get('phone', doctor.phone)
+
+    db.session.commit()
+    
+    return jsonify({"message": "Doctor updated successfully", "doctor": doctor.serialize()}), 200
+#Obtener doctor
 @api.route('/doctors', methods=['GET'])
 @jwt_required()
 def get_doctors():
@@ -292,6 +327,8 @@ def get_availability():
     availabilities_serialize = [availability.serialize() for availability in availabilities]
     return jsonify(availabilities_serialize), 200
 
+
+
 @api.route('/availability', methods=['POST'])
 def create_availability():
     body = request.get_json()
@@ -308,3 +345,37 @@ def create_availability():
     db.session.commit()
     
     return jsonify(new_availability.serialize()), 201
+
+#Actualizar disponibilidad
+@api.route('/availability/<int:availability_id>', methods=['PUT'])
+@jwt_required()
+def update_availability(availability_id):
+    body = request.get_json()
+    availability = Availability.query.get(availability_id)
+    
+    if not availability:
+        return jsonify({"message": "Availability not found"}), 404
+
+    availability.date = datetime.strptime(body['date'], "%Y-%m-%d").date()
+    availability.start_time = datetime.strptime(body['start_time'], "%H:%M").time()
+    availability.end_time = datetime.strptime(body['end_time'], "%H:%M").time()
+    availability.is_available = body.get('is_available', availability.is_available)
+
+    db.session.commit()
+    
+    return jsonify({"message": "Availability updated successfully", "availability": availability.serialize()}), 200
+
+#Elimninar disponibilidad
+@api.route('/availability/<int:availability_id>', methods=['DELETE'])
+@jwt_required()
+def delete_availability(availability_id):
+    availability = Availability.query.get(availability_id)
+    
+    if not availability:
+        return jsonify({"message": "Availability not found"}), 404
+
+    db.session.delete(availability)
+    db.session.commit()
+    
+    return jsonify({"message": "Availability deleted successfully"}), 200
+
