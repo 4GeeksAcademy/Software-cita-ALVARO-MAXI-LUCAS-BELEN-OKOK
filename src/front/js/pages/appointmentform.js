@@ -4,16 +4,24 @@ import { AppointmentContext } from '../store/AppointmentContext';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../styles/AppointmentForm.css';
+import { AuthContext } from '../store/AuthContext';
+
 
 
 export const AppointmentForm = () => {
   const { addAppointment, loading, error, availability, getDoctors, doctors } = useContext(AppointmentContext);
+  const { user } = useContext(AuthContext);
+  const userId = user ? user.id : null; // Extraigo el user de auth context aweonao 
   const [appointment, setAppointment] = useState({
     name: '',
     email: '',
     doctor_id: '',
     date: null,
     type: 'in-person',
+    speciality: '', // Agregar el campo speciality
+    reason_for_appointment: '', // Agregar el campo reason_for_appointment
+    date_type: '', // Agregar el campo date_type
+    user_id: userId,
   });
   const [successMessage, setSuccessMessage] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -45,8 +53,17 @@ export const AppointmentForm = () => {
       const dateStr = appointment.date.toISOString(); // ISO String incluye fecha y hora
       const formattedAppointment = {
         ...appointment,
-        datetime: dateStr
+        datetime: dateStr,
+        speciality: 'Oftalmología', // Agregar el campo speciality
+        reason_for_appointment: 'Consulta médica', // Agregar el campo reason_for_appointment
+        date_type: 'Cita médica', // Agregar el campo date_type
+        user_id: userId, // Actualizar el campo user_id con el valor correcto
       };
+       // Verificar si la hora seleccionada está disponible
+    if (!availableTimes.includes(formattedAppointment.datetime)) {
+      console.error('La hora seleccionada no está disponible');
+      return;
+    }
 
       try {
         await addAppointment(formattedAppointment);
@@ -57,7 +74,10 @@ export const AppointmentForm = () => {
           email: '',
           doctor_id: '',
           date: null,
-          type: 'in-person'
+          type: 'in-person',
+          speciality: '', // Agregar el campo speciality
+          reason_for_appointment: '', // Agregar el campo reason_for_appointment
+          date_type: '', // Agregar el campo date_type
         });
 
         setTimeout(() => setSuccessMessage(''), 3000);
@@ -155,6 +175,44 @@ export const AppointmentForm = () => {
             <option value="in-person">Presencial</option>
             <option value="video">Videollamada</option>
             <option value="call">Llamada</option>
+          </Form.Control>
+        </Form.Group>
+        <Form.Group controlId="formSpeciality">
+          <Form.Label>Especialidad</Form.Label>
+          <Form.Control
+            type="text"
+            name="speciality"
+            value={appointment.speciality}
+            onChange={handleChange}
+            placeholder="Ingrese la especialidad"
+            required
+          />
+        </Form.Group>
+
+        <Form.Group controlId="formReasonForAppointment">
+          <Form.Label>Razón de la cita</Form.Label>
+          <Form.Control
+            type="text"
+            name="reason_for_appointment"
+            value={appointment.reason_for_appointment}
+            onChange={handleChange}
+            placeholder="Ingrese la razón de la cita"
+            required
+          />
+        </Form.Group>
+
+        <Form.Group controlId="formDateType">
+          <Form.Label>Tipo de cita</Form.Label>
+          <Form.Control
+            as="select"
+            name="date_type"
+            value={appointment.date_type}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Seleccione un tipo de cita</option>
+            <option value="Cita médica">Cita médica</option>
+            <option value="Consulta médica">Consulta médica</option>
           </Form.Control>
         </Form.Group>
 

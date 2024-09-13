@@ -139,9 +139,13 @@ def private_access():
 @api.route('/dates', methods=['GET'])
 @jwt_required()
 def get_dates():
-    dates = Date.query.all()
-    dates_serialize = [date.serialize() for date in dates]
-    return jsonify(dates_serialize), 200
+    try:
+        dates = Date.query.all()
+        dates_serialize = [date.serialize() for date in dates]
+        return jsonify(dates_serialize), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Error al obtener fechas"}), 500
 
 
 @api.route('/dates/<int:date_id>', methods=['GET'])
@@ -159,31 +163,31 @@ def create_date():
     body = request.get_json()
 
     # Opción 1: Manejar datetime con milisegundos y zona horaria (UTC)
-    appointment_date = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     # Verificar disponibilidad
     availability = Availability.query.filter_by(
         doctor_id=body['doctor_id'],
-        date=appointment_date.date(),
+        date=appointment_datetime.date(),
         is_available=True
     ).first()
 
-    if availability and availability.start_time <= appointment_date.time() <= availability.end_time:
+    if availability and availability.start_time <= appointment_datetime.time() <= availability.end_time:
         # Crear la cita
         new_date = Date(
             speciality=body['speciality'],
             doctor=body['doctor_id'],
-            datetime=appointment_date,
+            datetime=appointment_datetime,
             reason_for_appointment=body['reason_for_appointment'],
             date_type=body['date_type'],
-            user_id=body['user_id']
+            user_id=body['user_id'],
         )
-        
+
         # Marcar la disponibilidad como no disponible
         availability.is_available = False
         db.session.add(new_date)
         db.session.commit()
-        
+
         return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
     else:
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
@@ -329,22 +333,26 @@ def get_availability():
 
 
 
+# Crear una disponibilidad general para todos los doctores
 @api.route('/availability', methods=['POST'])
 def create_availability():
     body = request.get_json()
     
-    new_availability = Availability(
-        doctor_id=body['doctor_id'],
+    # Crear una disponibilidad general para todos los doctores
+    availability = Availability(
+        doctor_id=None,  # No especificar doctor_id
         date=datetime.strptime(body['date'], "%Y-%m-%d").date(),
         start_time=datetime.strptime(body['start_time'], "%H:%M").time(),
         end_time=datetime.strptime(body['end_time'], "%H:%M").time(),
-        is_available=body.get('is_available', True)
+        is_available=True
     )
     
-    db.session.add(new_availability)
+    db.session.add(availability)
     db.session.commit()
     
-    return jsonify(new_availability.serialize()), 201
+    return jsonify(availability.serialize()), 201
+
+
 
 #Actualizar disponibilidad
 @api.route('/availability/<int:availability_id>', methods=['PUT'])

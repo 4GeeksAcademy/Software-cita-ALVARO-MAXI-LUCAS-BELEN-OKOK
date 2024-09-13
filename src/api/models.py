@@ -46,7 +46,7 @@ class User(db.Model):
 class Date(db.Model):
     __tablename__ = 'dates'
     id = db.Column(db.Integer, primary_key=True)
-    speciality = db.Column(db.String(50), nullable=False)
+    #speciality = db.Column(db.String(50), nullable=False)
     doctor = db.Column(db.String(100), nullable=False)
     datetime = db.Column(db.DateTime, nullable=False)  
     reason_for_appointment = db.Column(db.String(300), nullable=False)
@@ -61,7 +61,7 @@ class Date(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "speciality": self.speciality,
+           # "speciality": self.speciality,
             "doctor": self.doctor,
             "datetime": self.datetime.isoformat(),
             "reason_for_appointment": self.reason_for_appointment,
@@ -72,7 +72,7 @@ class Date(db.Model):
 class Availability(db.Model):
     __tablename__ = 'availability'
     id = db.Column(db.Integer, primary_key=True)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
@@ -89,3 +89,4 @@ class Availability(db.Model):
             "end_time": self.end_time.strftime("%H:%M"),
             "is_available": self.is_available
         }
+        
