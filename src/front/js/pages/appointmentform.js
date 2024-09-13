@@ -59,11 +59,7 @@ export const AppointmentForm = () => {
         date_type: 'Cita médica', // Agregar el campo date_type
         user_id: userId, // Actualizar el campo user_id con el valor correcto
       };
-       // Verificar si la hora seleccionada está disponible
-    if (!availableTimes.includes(formattedAppointment.datetime)) {
-      console.error('La hora seleccionada no está disponible');
-      return;
-    }
+
 
       try {
         await addAppointment(formattedAppointment);

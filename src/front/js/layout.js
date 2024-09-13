@@ -21,6 +21,9 @@ import { ProtectRoute } from "../js/pages/protectroute";
 import { Login } from "../js/pages/login";
 import { Signup } from "../js/pages/signup";
 import { RegisterProvider } from "./store/RegisterContext";
+import { DateProvider } from "./store/DateContext";
+import { DoctorProvider } from "./store/DoctorContext";
+import { AvailabilityProvider } from "./store/AvailabilityContext";;
 
 
 //create your first component
@@ -49,7 +52,18 @@ const Layout = () => {
                                         <Route element={<ContactForm />} path="/contact" />
                                         <Route element={<Login />} path="/login" />
                                         <Route element={<Signup />} path="/register" />
-                                        <Route element={<AdminPanel />} path="/admin" />
+                                        <Route
+                                            element={
+                                                <DateProvider>
+                                                    <DoctorProvider>
+                                                        <AvailabilityProvider>
+                                                            <AdminPanel />
+                                                        </AvailabilityProvider>
+                                                    </DoctorProvider>
+                                                </DateProvider>
+                                            }
+                                            path="/admin"
+                                        />
                                         <Route element={<h1>Not found!</h1>} />
                                     </Routes>
                                     <Footer />

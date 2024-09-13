@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+import datetime
 from flask import request, jsonify, Blueprint
 from api.models import db, User, Date, Availability
 from api.utils import APIException
@@ -5,7 +7,7 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+
 import resend
 
 # Cargar variables de entorno
@@ -324,6 +326,38 @@ def get_doctor_availability(doctor_id):
         current_time = (datetime.combine(date.today(), current_time) + timedelta(minutes=30)).time()
 
     return jsonify(available_times), 200
+
+
+@api.route('/doctor/<int:doctor_id>/availability', methods=['POST'])
+@jwt_required()
+def create_doctor_availability(doctor_id):
+    """
+    Creates a new availability slot for a doctor.
+
+    Args:
+        doctor_id (int): The ID of the doctor.
+
+    Request Body:
+        - date (string): The date of the availability slot in YYYY-MM-DD format.
+        - start_time (string): The start time of the availability slot in HH:MM:SS format.
+        - end_time (string): The end time of the availability slot in HH:MM:SS format.
+
+    Returns:
+        - A JSON response with the newly created availability slot.
+    """
+    data = request.get_json()
+    date = datetime.datetime.strptime(data.get('date'), '%Y-%m-%d').date()
+    start_time = datetime.datetime.strptime(data.get('start_time'), '%H:%M:%S').time()
+    end_time = datetime.datetime.strptime(data.get('end_time'), '%H:%M:%S').time()
+
+    # Create a new availability slot
+    availability = Availability(doctor_id=doctor_id, date=date, start_time=start_time, end_time=end_time)
+    db.session.add(availability)
+    db.session.commit()
+
+    return jsonify(availability.serialize()), 201
+
+
 
 @api.route('/availability', methods=['GET'])
 def get_availability():
