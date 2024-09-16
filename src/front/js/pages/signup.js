@@ -18,7 +18,10 @@ export const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [phone, setPhone] = useState("");
 
-    
+
+    // Estado para el modal de éxito
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
     const handelDocumentType = (e) => {
         setDocumentType(e.target.value)
     }
@@ -32,7 +35,10 @@ export const Signup = () => {
 
         const success = await register(name, lastName, documentType, documentNumber, address, email, password, phone);
         if (success) {
-            navigate("/login");  // Redirige al login después del registro exitoso
+            setShowSuccessModal(true);  // Muestra el modal de éxito
+            setTimeout(() => {
+                navigate("/login");  // Redirige al login después de 3 segundos
+            }, 3000);
         } else {
             alert("Error en el registro, por favor inténtalo de nuevo.");
         }
@@ -154,6 +160,28 @@ export const Signup = () => {
                     <button type="submit" className="btn btn-primary w-100" style={{ fontSize: '16px', padding: '10px' }}>Registrarse</button>
                 </form>
             </div>
+            {/* Modal de éxito */}
+            {/* Modal de éxito */}
+            {showSuccessModal && (
+                <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1050 }}>
+                    <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div className="toast-header">
+                            <strong className="me-auto">¡Registro Exitoso!</strong>
+                        </div>
+                        <div className="toast-body">
+                            <p>Serás redirigido al login en breve...</p>
+                            <div className="progress mt-2" style={{ height: '5px' }}>
+                                <div 
+                                    className="progress-bar progress-bar-striped bg-success" 
+                                    role="progressbar" 
+                                    style={{ width: '100%', transition: 'width 3s linear' }}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

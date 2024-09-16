@@ -15,7 +15,7 @@ class User(db.Model):
     speciality = db.Column(db.String(200), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(300), nullable=False)
-    phone = db.Column(db.Integer, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
 
     # Relación uno a muchos: un usuario puede tener múltiples citas
     dates = db.relationship('Date', backref='user', lazy=True)
@@ -46,7 +46,7 @@ class User(db.Model):
 class Date(db.Model):
     __tablename__ = 'dates'
     id = db.Column(db.Integer, primary_key=True)
-    speciality = db.Column(db.String(50), nullable=False)
+    #speciality = db.Column(db.String(50), nullable=False)
     doctor = db.Column(db.String(100), nullable=False)
     datetime = db.Column(db.DateTime, nullable=False)  
     reason_for_appointment = db.Column(db.String(300), nullable=False)
@@ -61,10 +61,32 @@ class Date(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "speciality": self.speciality,
+           # "speciality": self.speciality,
             "doctor": self.doctor,
             "datetime": self.datetime.isoformat(),
             "reason_for_appointment": self.reason_for_appointment,
             "date_type": self.date_type,
             "user_id": self.user_id
         }
+
+class Availability(db.Model):
+    __tablename__ = 'availability'
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    is_available = db.Column(db.Boolean, default=True)
+
+    doctor = db.relationship('User', backref='availabilities')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "doctor_id": self.doctor_id,
+            "date": self.date.isoformat(),
+            "start_time": self.start_time.strftime("%H:%M"),
+            "end_time": self.end_time.strftime("%H:%M"),
+            "is_available": self.is_available
+        }
+        

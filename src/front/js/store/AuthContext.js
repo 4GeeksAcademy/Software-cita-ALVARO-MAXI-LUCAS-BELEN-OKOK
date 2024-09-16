@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     // Función para iniciar sesión
     const login = async (email, password) => {
         try {
-            const response = await fetch(process.env.BACKEND_URL +'/login', {
+            const response = await fetch(process.env.BACKEND_URL + '/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -20,14 +20,14 @@ export const AuthProvider = ({ children }) => {
 
             if (response.ok) {
                 // Guardar el token JWT en localStorage
-                localStorage.setItem('token', data.token);
-                
+                localStorage.setItem('token', data.access_token);
+
                 // Establecer el usuario en el estado (asumimos que recibes el usuario en la respuesta)
-                setUser(data.user);  
-                
+                setUser(data.user);
+
                 // Guardar el usuario en localStorage para persistencia
                 localStorage.setItem('user', JSON.stringify(data.user));
-                
+
                 return true;  // Devuelve éxito
             } else {
                 console.error('Login failed:', data.message);
