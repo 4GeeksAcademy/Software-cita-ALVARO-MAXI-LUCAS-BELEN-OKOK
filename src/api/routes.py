@@ -165,35 +165,47 @@ def get_date(date_id):
 def create_date():
     body = request.get_json()
 
-    # Opción 1: Manejar datetime con milisegundos y zona horaria (UTC)
+    # Convertir la fecha y hora a formato datetime
     appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    # Verificar disponibilidad
+    # Verificar disponibilidad del doctor en esa fecha y hora
     availability = Availability.query.filter_by(
         doctor_id=body['doctor_id'],
         date=appointment_datetime.date(),
         is_available=True
     ).first()
 
-    if availability and availability.start_time <= appointment_datetime.time() <= availability.end_time:
-        # Crear la cita
-        new_date = Date(
-            speciality=body['speciality'],
-            doctor=body['doctor_id'],
-            datetime=appointment_datetime,
-            reason_for_appointment=body['reason_for_appointment'],
-            date_type=body['date_type'],
-            user_id=body['user_id'],
-        )
+    if not availability:
+        return jsonify({"message": "No availability found for this doctor on this date"}), 400
 
-        # Marcar la disponibilidad como no disponible
-        availability.is_available = False
-        db.session.add(new_date)
-        db.session.commit()
-
-        return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
-    else:
+    # Verificar que la hora seleccionada está dentro del rango de disponibilidad
+    if not (availability.start_time <= appointment_datetime.time() <= availability.end_time):
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
+
+    # Verificar que no haya otras citas a la misma hora
+    existing_appointment = Date.query.filter_by(
+        doctor=body['doctor_id'],
+        datetime=appointment_datetime
+    ).first()
+
+    if existing_appointment:
+        return jsonify({"message": "Esta hora ya está reservada para otra cita"}), 400
+
+    # Si todo está bien, crear la nueva cita
+    new_date = Date(
+        speciality=body['speciality'],
+        doctor=body['doctor_id'],
+        datetime=appointment_datetime,
+        reason_for_appointment=body['reason_for_appointment'],
+        date_type=body['date_type'],
+        user_id=body['user_id'],
+    )
+
+    # Guardar la nueva cita
+    db.session.add(new_date)
+    db.session.commit()
+
+    return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
 
 
 
@@ -330,10 +342,21 @@ def get_doctors():
 @jwt_required()
 def get_doctor_availability(doctor_id):
     date_str = request.args.get('date')
-    date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-    
+
+    if not date_str:
+        return jsonify({"error": "Missing or invalid 'date' parameter"}), 400
+
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": f"Invalid date format, should be 'YYYY-MM-DD'. Received: {date_str}"}), 400
+
     # Filtrar las citas que ya están reservadas para ese doctor en esa fecha
-    appointments = Date.query.filter_by(doctor=doctor_id, datetime=date_obj).all()
+    appointments = Date.query.filter(
+        Date.doctor == str(doctor_id),
+        db.func.date(Date.datetime) == date_obj
+    ).all()
+
     reserved_times = [appointment.datetime.time() for appointment in appointments]
     
     # Asumimos que el doctor trabaja de 9:00 AM a 5:00 PM, y tiene citas cada 30 minutos
@@ -348,6 +371,8 @@ def get_doctor_availability(doctor_id):
         current_time = (datetime.combine(date.today(), current_time) + timedelta(minutes=30)).time()
 
     return jsonify(available_times), 200
+
+
 
 
 @api.route('/doctor/<int:doctor_id>/availability', methods=['POST'])

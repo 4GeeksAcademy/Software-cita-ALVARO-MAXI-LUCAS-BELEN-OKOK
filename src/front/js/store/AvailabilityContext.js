@@ -38,7 +38,6 @@ const AvailabilityProvider = ({ children }) => {
 
     const addAvailability = async (availability) => {
         const token = getToken();
-
         try {
             const response = await fetch(`${process.env.BACKEND_URL}/availability`, {
                 method: 'POST',
@@ -46,7 +45,7 @@ const AvailabilityProvider = ({ children }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(availability),
+                body: JSON.stringify(availability),  // Asegúrate de que availability contiene doctor_id, start_time, end_time y date
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -58,6 +57,7 @@ const AvailabilityProvider = ({ children }) => {
             setError(error.message);
         }
     };
+
 
     const updateAvailability = async (availability) => {
         const token = getToken();

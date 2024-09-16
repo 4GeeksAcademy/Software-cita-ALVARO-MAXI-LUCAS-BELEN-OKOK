@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { DateContext } from '../store/DateContext';
 import { DoctorContext } from '../store/DoctorContext';
 import { AvailabilityContext } from '../store/AvailabilityContext';
@@ -7,20 +7,28 @@ import DateTable from '../component/DateTable';
 import DoctorTable from '../component/DoctorTable';
 import AvailabilityTable from '../component/AvailabilityTable';
 import { Button, Modal, Form, Spinner, Alert, Card, Row, Col } from 'react-bootstrap';
+import { FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
 
 export const AdminPanel = () => {
   const { dates, addDate, updateDate, removeDate, loading, error } = useContext(DateContext);
   const { doctors, addDoctor, updateDoctor, removeDoctor } = useContext(DoctorContext);
   const { availabilities, addAvailability, updateAvailability, removeAvailability } = useContext(AvailabilityContext);
 
-  // Estados separados para cada modal
+  // Estados para mostrar y gestionar modales
   const [showDateModal, setShowDateModal] = useState(false);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
-
   const [editMode, setEditMode] = useState(false);
 
-  // Estados para cada entidad
+  // Estado para gestionar la lista de usuarios
+  const [users, setUsers] = useState([]);
+
+  // Estado para gestionar las horas disponibles de los doctores
+  const [selectedDoctor, setSelectedDoctor] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [availableTimes, setAvailableTimes] = useState([]);
+
+  // Estados para gestionar los datos de cada entidad
   const [currentDate, setCurrentDate] = useState({
     speciality: '', doctor: '', datetime: '', reason_for_appointment: '', date_type: '', user_id: ''
   });
@@ -39,7 +47,49 @@ export const AdminPanel = () => {
     doctor_id: '', date: '', start_time: '', end_time: '', is_available: true
   });
 
-  // Handlers para mostrar modales
+  // Función para obtener las horas disponibles de un doctor
+  const fetchAvailableTimes = async (doctorId, date) => {
+    try {
+      const response = await fetch(`${process.env.BACKEND_URL}/doctor/${doctorId}/availability?date=${date}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const times = await response.json();
+      setAvailableTimes(times);  // Guardar las horas disponibles
+    } catch (error) {
+      console.error('Error fetching available times:', error);
+    }
+  };
+
+
+
+  // useEffect para obtener horas disponibles cuando cambian el doctor o la fecha
+  useEffect(() => {
+    if (selectedDoctor && selectedDate) {
+      fetchAvailableTimes(selectedDoctor, selectedDate);
+    }
+  }, [selectedDoctor, selectedDate]);
+
+  // useEffect para cargar la lista de usuarios
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${process.env.BACKEND_URL}/users`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        setUsers(data.user);  // Guardar la lista de usuarios en el estado
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // Funciones para gestionar la apertura y cierre de modales
   const handleShowDateModal = (date = { speciality: '', doctor: '', datetime: '', reason_for_appointment: '', date_type: '', user_id: '' }) => {
     setCurrentDate(date);
     setEditMode(!!date.id);
@@ -69,22 +119,24 @@ export const AdminPanel = () => {
     setShowAvailabilityModal(true);
   };
 
-  // Handlers para cerrar modales
   const handleCloseModal = () => {
     setShowDateModal(false);
     setShowDoctorModal(false);
     setShowAvailabilityModal(false);
   };
 
-  // Handlers de cambio y submit para cada entidad
+  // Handlers para gestionar cambios en los formularios
   const handleDateChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentDate({ ...currentDate, [name]: value });
+    const date = e.target.value; // Asegúrate de que este formato es YYYY-MM-DD
+    setSelectedDate(date);
+    setCurrentDate({ ...currentDate, datetime: date });
   };
 
+
   const handleDoctorChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentDoctor({ ...currentDoctor, [name]: value });
+    const doctorId = e.target.value;
+    setSelectedDoctor(doctorId);
+    setCurrentDate({ ...currentDate, doctor: doctorId });
   };
 
   const handleAvailabilityChange = (e) => {
@@ -93,52 +145,30 @@ export const AdminPanel = () => {
     setCurrentAvailability({ ...currentAvailability, [name]: newValue });
   };
 
+  // Envío de datos de citas
   const handleDateSubmit = async (e) => {
     e.preventDefault();
-    if (editMode) {
-      await updateDate(currentDate);
-    } else {
-      await addDate(currentDate);
-    }
-    handleCloseModal();
-  };
 
-  const handleDoctorSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validaciones del formulario
-    const { name, email, speciality, password } = currentDoctor;
-    if (!name || !email || !speciality) {
-      alert("Name, email, and speciality are required!");
-      return;
-    }
-
-    if (!editMode && !password) {
-      alert("Password is required for new doctors!");
-      return;
-    }
+    const newDate = {
+      speciality: currentDate.speciality,
+      doctor_id: currentDate.doctor,
+      datetime: new Date(currentDate.datetime).toISOString(), // Convertir a formato ISO
+      reason_for_appointment: currentDate.reason_for_appointment,
+      date_type: currentDate.date_type,
+      user_id: currentDate.user_id
+    };
 
     try {
       if (editMode) {
-        await updateDoctor(currentDoctor);
+        await updateDate(newDate); // Actualizar cita existente
       } else {
-        await addDoctor(currentDoctor);
+        await addDate(newDate); // Añadir nueva cita
       }
       handleCloseModal();
-    } catch (err) {
-      console.error("Error submitting doctor:", err);
+    } catch (error) {
+      console.error("Error creating/updating date:", error);
+      alert("There was an error creating or updating the date.");
     }
-  };
-
-
-  const handleAvailabilitySubmit = async (e) => {
-    e.preventDefault();
-    if (editMode) {
-      await updateAvailability(currentAvailability);
-    } else {
-      await addAvailability(currentAvailability);
-    }
-    handleCloseModal();
   };
 
   return (
@@ -146,13 +176,15 @@ export const AdminPanel = () => {
       <h1 className="text-center mb-4">Admin Panel</h1>
 
       <Row>
-        {/* Dates Management */}
+        {/* Gestión de Citas */}
         <Col md={4}>
-          <Card className="mb-4">
+          <Card className="shadow-sm mb-4">
             <Card.Body>
-              <Card.Title className="text-center mb-4">Dates</Card.Title>
+              <Card.Title className="text-center mb-4">
+                <FaCalendarAlt className="me-2" /> Dates
+              </Card.Title>
               <Button variant="primary" onClick={() => handleShowDateModal()}>
-                Add Date
+                <FaCalendarAlt className="me-2" /> Add Date
               </Button>
 
               {loading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
@@ -163,13 +195,15 @@ export const AdminPanel = () => {
           </Card>
         </Col>
 
-        {/* Doctors Management */}
+        {/* Gestión de Doctores */}
         <Col md={4}>
-          <Card className="mb-4">
+          <Card className="shadow-sm mb-4">
             <Card.Body>
-              <Card.Title className="text-center mb-4">Doctors</Card.Title>
+              <Card.Title className="text-center mb-4">
+                <FaUserMd className="me-2" /> Doctors
+              </Card.Title>
               <Button variant="primary" onClick={() => handleShowDoctorModal()}>
-                Add Doctor
+                <FaUserMd className="me-2" /> Add Doctor
               </Button>
 
               {loading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
@@ -180,13 +214,15 @@ export const AdminPanel = () => {
           </Card>
         </Col>
 
-        {/* Availability Management */}
+        {/* Gestión de Disponibilidad */}
         <Col md={4}>
-          <Card className="mb-4">
+          <Card className="shadow-sm mb-4">
             <Card.Body>
-              <Card.Title className="text-center mb-4">Availability</Card.Title>
+              <Card.Title className="text-center mb-4">
+                <FaClock className="me-2" /> Availability
+              </Card.Title>
               <Button variant="primary" onClick={() => handleShowAvailabilityModal()}>
-                Add Availability
+                <FaClock className="me-2" /> Add Availability
               </Button>
 
               {loading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
@@ -198,228 +234,45 @@ export const AdminPanel = () => {
         </Col>
       </Row>
 
-      {/* Modal for Adding/Editing Date */}
+      {/* Modal para agregar/editar cita */}
       <Modal show={showDateModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>{editMode ? 'Edit Date' : 'Add Date'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleDateSubmit}>
-            <Form.Group controlId="formSpeciality">
+            {/* Especialidad */}
+            <Form.Group controlId="formSpeciality" className="mb-3">
               <Form.Label>Speciality</Form.Label>
               <Form.Control
                 type="text"
                 name="speciality"
                 value={currentDate.speciality || ''}
-                onChange={handleDateChange}
+                onChange={(e) => {
+                  setCurrentDate({ ...currentDate, speciality: e.target.value });
+                  console.log('Speciality:', e.target.value); // Verificación de valor
+                }}
                 placeholder="Enter speciality"
                 required
               />
             </Form.Group>
 
-
-            <Form.Group controlId="formDoctor">
-              <Form.Label>Doctor</Form.Label>
-              <Form.Control
-                type="text"
-                name="doctor"
-                value={currentDate.doctor || ''}
-                onChange={handleDateChange}
-                placeholder="Enter doctor"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDatetime">
-              <Form.Label>Datetime</Form.Label>
-              <Form.Control
-                type="datetime-local"
-                name="datetime"
-                value={currentDate.datetime || ''}
-                onChange={handleDateChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formReasonForAppointment">
-              <Form.Label>Reason for Appointment</Form.Label>
-              <Form.Control
-                type="text"
-                name="reason_for_appointment"
-                value={currentDate.reason_for_appointment || ''}
-                onChange={handleDateChange}
-                placeholder="Enter reason for appointment"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDateType">
-              <Form.Label>Date Type</Form.Label>
-              <Form.Control
-                type="text"
-                name="date_type"
-                value={currentDate.date_type || ''}
-                onChange={handleDateChange}
-                placeholder="Enter date type"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formUserId">
-              <Form.Label>User ID</Form.Label>
-              <Form.Control
-                type="number"
-                name="user_id"
-                value={currentDate.user_id || ''}
-                onChange={handleDateChange}
-                placeholder="Enter user ID"
-                required
-              />
-            </Form.Group>
-
-            <Button variant="primary" type="submit" className="mt-3">
-              {editMode ? 'Update Date' : 'Add Date'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal for Adding/Editing Doctor */}
-      <Modal show={showDoctorModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleDoctorSubmit}>
-            <Form.Group controlId="formName">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={currentDoctor.name}
-                onChange={handleDoctorChange}
-                placeholder="Enter doctor's name"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formEmail">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={currentDoctor.email}
-                onChange={handleDoctorChange}
-                placeholder="Enter doctor's email"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formSpeciality">
-              <Form.Label>Speciality</Form.Label>
-              <Form.Control
-                type="text"
-                name="speciality"
-                value={currentDoctor.speciality}
-                onChange={handleDoctorChange}
-                placeholder="Enter doctor's speciality"
-                required
-              />
-            </Form.Group>
-
-            {!editMode && (
-              <Form.Group controlId="formPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  value={currentDoctor.password}
-                  onChange={handleDoctorChange}
-                  placeholder="Enter doctor's password"
-                  required
-                />
-              </Form.Group>
-            )}
-
-            <Form.Group controlId="formLastName">
-              <Form.Label>Last Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="last_name"
-                value={currentDoctor.last_name}
-                onChange={handleDoctorChange}
-                placeholder="Enter doctor's last name"
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDocumentType">
-              <Form.Label>Document Type</Form.Label>
-              <Form.Control
-                type="text"
-                name="document_type"
-                value={currentDoctor.document_type}
-                onChange={handleDoctorChange}
-                placeholder="Enter document type"
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDocumentNumber">
-              <Form.Label>Document Number</Form.Label>
-              <Form.Control
-                type="text"
-                name="document_number"
-                value={currentDoctor.document_number}
-                onChange={handleDoctorChange}
-                placeholder="Enter document number"
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formAddress">
-              <Form.Label>Address</Form.Label>
-              <Form.Control
-                type="text"
-                name="address"
-                value={currentDoctor.address}
-                onChange={handleDoctorChange}
-                placeholder="Enter address"
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formPhone">
-              <Form.Label>Phone</Form.Label>
-              <Form.Control
-                type="text"
-                name="phone"
-                value={currentDoctor.phone}
-                onChange={handleDoctorChange}
-                placeholder="Enter phone number"
-              />
-            </Form.Group>
-
-            <Button variant="primary" type="submit" className="mt-3">
-              {editMode ? 'Update Doctor' : 'Add Doctor'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal for Adding/Editing Availability */}
-      <Modal show={showAvailabilityModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{editMode ? 'Edit Availability' : 'Add Availability'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleAvailabilitySubmit}>
-            <Form.Group controlId="formDoctorId">
+            {/* Selección de Doctor */}
+            <Form.Group controlId="formDoctor" className="mb-3">
               <Form.Label>Doctor</Form.Label>
               <Form.Control
                 as="select"
-                name="doctor_id"
-                value={currentAvailability.doctor_id || ''}
-                onChange={handleAvailabilityChange}
+                name="doctor"
+                value={currentDate.doctor || ''}
+                onChange={(e) => {
+                  const selectedDoctorId = e.target.value;
+                  setCurrentDate({ ...currentDate, doctor: selectedDoctorId });
+                  console.log('Selected Doctor:', selectedDoctorId); // Verificación de valor
+                  fetchAvailableTimes(selectedDoctorId, selectedDate); // Obtener tiempos disponibles
+                }}
                 required
               >
-                <option value="">Seleccione un doctor</option>
+                <option value="">Select a doctor</option>
                 {doctors.map((doctor) => (
                   <option key={doctor.id} value={doctor.id}>
                     {doctor.name}
@@ -428,58 +281,112 @@ export const AdminPanel = () => {
               </Form.Control>
             </Form.Group>
 
-
-            <Form.Group controlId="formDate">
-              <Form.Label>Date</Form.Label>
+            {/* Fecha */}
+            <Form.Group controlId="formDate" className="mb-3">
+              <Form.Label>Select Date</Form.Label>
               <Form.Control
                 type="date"
                 name="date"
-                value={currentAvailability.date || ''}
-                onChange={handleAvailabilityChange}
+                value={selectedDate || ''} // Asegúrate de que esté en formato 'YYYY-MM-DD'
+                onChange={(e) => {
+                  const selectedDateValue = e.target.value;
+                  setSelectedDate(selectedDateValue);
+                  console.log('Selected Date:', selectedDateValue); // Verificación de valor
+                  fetchAvailableTimes(currentDate.doctor, selectedDateValue); // Obtener tiempos disponibles cuando cambia la fecha
+                }}
                 required
               />
             </Form.Group>
 
-            <Form.Group controlId="formStartTime">
-              <Form.Label>Start Time</Form.Label>
+            {/* Tiempo disponible */}
+            <Form.Group controlId="formAvailableTime" className="mb-3">
+              <Form.Label>Available Time</Form.Label>
               <Form.Control
-                type="time"
-                name="start_time"
-                value={currentAvailability.start_time || ''}
-                onChange={handleAvailabilityChange}
+                as="select"
+                name="datetime"
+                value={currentDate.datetime || ''}
+                onChange={(e) => {
+                  setCurrentDate({ ...currentDate, datetime: e.target.value });
+                  console.log('Selected Time:', e.target.value); // Verificación de valor
+                }}
                 required
-              />
+              >
+                <option value="">Select a time</option>
+                {availableTimes.length > 0 ? (
+                  availableTimes.map((time, index) => (
+                    <option key={index} value={time}>
+                      {time}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">No available times</option>
+                )}
+              </Form.Control>
             </Form.Group>
 
-            <Form.Group controlId="formEndTime">
-              <Form.Label>End Time</Form.Label>
+            {/* Tipo de cita */}
+            <Form.Group controlId="formDateType" className="mb-3">
+              <Form.Label>Date Type</Form.Label>
               <Form.Control
-                type="time"
-                name="end_time"
-                value={currentAvailability.end_time || ''}
-                onChange={handleAvailabilityChange}
+                type="text"
+                name="date_type"
+                value={currentDate.date_type || ''}
+                onChange={(e) => {
+                  setCurrentDate({ ...currentDate, date_type: e.target.value });
+                  console.log('Date Type:', e.target.value); // Verificación de valor
+                }}
+                placeholder="Enter the type of date (e.g., 'Consulta', 'Urgente')"
                 required
               />
             </Form.Group>
 
-            <Form.Group controlId="formIsAvailable">
-              <Form.Check
-                type="checkbox"
-                name="is_available"
-                label="Is Available"
-                checked={currentAvailability.is_available || false}
-                onChange={handleAvailabilityChange}
+            {/* Motivo de la cita */}
+            <Form.Group controlId="formReasonForAppointment" className="mb-3">
+              <Form.Label>Reason for Appointment</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="reason_for_appointment"
+                value={currentDate.reason_for_appointment || ''}
+                onChange={(e) => {
+                  setCurrentDate({ ...currentDate, reason_for_appointment: e.target.value });
+                  console.log('Reason:', e.target.value); // Verificación de valor
+                }}
+                placeholder="Describe the reason for the appointment"
+                required
               />
             </Form.Group>
 
-            <Button variant="primary" type="submit" className="mt-3">
-              {editMode ? 'Update Availability' : 'Add Availability'}
+            {/* Selección de usuario */}
+            <Form.Group controlId="formUserId" className="mb-3">
+              <Form.Label>User</Form.Label>
+              <Form.Control
+                as="select"
+                name="user_id"
+                value={currentDate.user_id || ''}
+                onChange={(e) => {
+                  setCurrentDate({ ...currentDate, user_id: e.target.value });
+                  console.log('Selected User:', e.target.value); // Verificación de valor
+                }}
+                required
+              >
+                <option value="">Select a user</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name} {user.last_name} (ID: {user.id})
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+
+            <Button variant="primary" type="submit" className="mt-3 w-100">
+              {editMode ? 'Update Date' : 'Add Date'}
             </Button>
           </Form>
         </Modal.Body>
       </Modal>
 
-      <DoctorAvailability />
+
     </div>
   );
 };
