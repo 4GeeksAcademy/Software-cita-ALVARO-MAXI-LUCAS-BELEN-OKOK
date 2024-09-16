@@ -12,6 +12,8 @@ export const ContactForm = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   
+  const googleMapsUrl = 'https://www.google.com/maps/place/Be+Casa+Essential+Torrent+Park/@39.4284114,-0.4709562,19.25z/data=!4m6!3m5!1s0xd60512a2b64ce6b:0x93882948ce1271f2!8m2!3d39.4284164!4d-0.4704952!16s%2Fg%2F11kjm5xh3y?entry=ttu&g_ep=EgoyMDI0MDkwNC4wIKXMDSoASAFQAw%3D%3D'
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -78,9 +80,17 @@ export const ContactForm = () => {
             required
           />
         </Form.Group>
-        <Button variant="primary" type="submit" className="mt-3">
+        <div className='d-flex flex-column justify-content-center align-items-center '>
+          <Button variant="primary" type="submit" className="mt-3 col-3">
           Enviar
-        </Button>
+          </Button>
+          <Button
+          variant="success"
+          className="mt-3 col-3"
+          onClick={() => window.open(googleMapsUrl, '_blank')} >
+          <i>Como llegar a nuestra clínica</i>
+          </Button>
+        </div>
       </Form>
     </Container>
   );
