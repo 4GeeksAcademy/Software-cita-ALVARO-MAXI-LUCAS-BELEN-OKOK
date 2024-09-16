@@ -1,5 +1,4 @@
-from datetime import date, timedelta
-import datetime
+from datetime import date, timedelta, datetime
 from flask import request, jsonify, Blueprint
 from api.models import db, User, Date, Availability
 from api.utils import APIException
@@ -7,6 +6,8 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 import os
 from dotenv import load_dotenv
+from sqlalchemy.exc import SQLAlchemyError
+
 
 import resend
 
@@ -247,20 +248,41 @@ def get_private_dates():
     }), 200
 
 
-#crear doctor
 @api.route('/doctors', methods=['POST'])
 @jwt_required()
 def create_doctor():
     body = request.get_json()
-    
-    new_doctor = User(**body)
-    new_doctor.set_password(body.get('password', 'default_password'))
-    new_doctor.role = 'doctor'  # Asegúrate de que el rol sea 'doctor'
-    
-    db.session.add(new_doctor)
-    db.session.commit()
-    
-    return jsonify({"message": "Doctor created successfully!", "doctor": new_doctor.serialize()}), 201
+
+    # Validar campos requeridos
+    required_fields = ['name', 'email', 'password', 'speciality', 'document_type']
+    for field in required_fields:
+        if not body.get(field):
+            return jsonify({"error": f"'{field}' is required"}), 400
+
+    try:
+        # Crear nuevo doctor
+        new_doctor = User(
+            name=body.get('name'),
+            last_name=body.get('last_name'),
+            document_type=body.get('document_type'),
+            document_number=body.get('document_number'),
+            address=body.get('address'),
+            role='doctor',  # Asignamos el rol de doctor
+            speciality=body.get('speciality'),
+            email=body.get('email'),
+           phone=body.get('phone', '') 
+        )
+        new_doctor.set_password(body.get('password'))
+
+        db.session.add(new_doctor)
+        db.session.commit()
+
+        return jsonify({"message": "Doctor created successfully!", "doctor": new_doctor.serialize()}), 201
+    except SQLAlchemyError as e:
+        # Manejar cualquier error de la base de datos
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 
 #Eliminar Doctor
 @api.route('/doctors/<int:doctor_id>', methods=['DELETE'])
@@ -371,20 +393,26 @@ def get_availability():
 @api.route('/availability', methods=['POST'])
 def create_availability():
     body = request.get_json()
-    
-    # Crear una disponibilidad general para todos los doctores
+
+    # Asegúrate de que el doctor_id está presente en la solicitud
+    doctor_id = body.get('doctor_id')
+    if not doctor_id:
+        return jsonify({"error": "Doctor ID is required"}), 400
+
     availability = Availability(
-        doctor_id=None,  # No especificar doctor_id
+        doctor_id=doctor_id,  # Ahora se asigna el doctor_id desde el frontend
         date=datetime.strptime(body['date'], "%Y-%m-%d").date(),
         start_time=datetime.strptime(body['start_time'], "%H:%M").time(),
         end_time=datetime.strptime(body['end_time'], "%H:%M").time(),
         is_available=True
     )
-    
+
     db.session.add(availability)
     db.session.commit()
-    
+
     return jsonify(availability.serialize()), 201
+
+
 
 
 
