@@ -386,6 +386,24 @@ export const AdminPanel = () => {
         </Modal.Body>
       </Modal>
 
+      <Modal show={showDoctorModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton className="bg-primary text-white">
+          <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {/* Formulario para Doctor */}
+        </Modal.Body>
+      </Modal>
+
+      <Modal show={showAvailabilityModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton className="bg-primary text-white">
+          <Modal.Title>{editMode ? 'Edit Availability' : 'Add Availability'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {/* Formulario para Disponibilidad */}
+        </Modal.Body>
+      </Modal>
+
 
     </div>
   );
