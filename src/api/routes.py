@@ -8,7 +8,6 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.exc import SQLAlchemyError
 
-
 import resend
 
 # Cargar variables de entorno
@@ -53,8 +52,8 @@ def create_user():
 
     # Enviar correo de bienvenida usando Resend
     params = {
-        "from": "Acme <onboarding@resend.dev>",
-        "to": "ponitsa@gmail.com",  # Asumiendo que `new_user.email` tiene el correo del usuario
+        "from": os.getenv("RESEND_EMAIL_FROM"),
+        "to": os.getenv("RESEND_EMAIL_TESTING", new_user.email),  # Asumiendo que `new_user.email` tiene el correo del usuario
         "subject": "Welcome to Our Platform!",
         "html": "<strong>Welcome to our platform, we're glad to have you!</strong>"
     }
