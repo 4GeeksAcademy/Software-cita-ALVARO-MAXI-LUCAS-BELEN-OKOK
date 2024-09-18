@@ -164,14 +164,14 @@ export const AppointmentForm = () => {
             ))}
           </Form.Control>
         </Form.Group>
-        {/* <div style={{ height: 500, marginTop: '10px' }}>
+        <div style={{ height: 500, marginTop: '10px' }}>
           <h3>Calendario de citas</h3>
           <Calendar
             localizer={localizer}
             events={events}
             startAccessor="start"
             endAccessor="end"
-            style={{ height: 400, width: 400 }}
+            style={{ height: 350, width: 350 }}
             selectable
             onSelectSlot={handleSelectSlot}
             step={30} 
@@ -179,8 +179,8 @@ export const AppointmentForm = () => {
             defaultView="month" 
             views={['month','week', 'day']} 
           />
-        </div> */}
-        <Form.Group controlId="formDate">
+        </div>
+        {/* <Form.Group controlId="formDate">
           <Form.Label>Fecha y Hora</Form.Label>
           <DatePicker
             selected={appointment.date}
@@ -194,7 +194,7 @@ export const AppointmentForm = () => {
             placeholderText="Seleccione una fecha y hora"
             required
           />
-        </Form.Group>
+        </Form.Group> */}
 
         <Form.Group controlId="formType">
           <Form.Label>Tipo de Cita</Form.Label>
