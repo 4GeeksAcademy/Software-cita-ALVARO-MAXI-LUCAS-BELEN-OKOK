@@ -5,8 +5,11 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../styles/AppointmentForm.css';
 import { AuthContext } from '../store/AuthContext';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-
+const localizer = momentLocalizer(moment);
 
 export const AppointmentForm = () => {
   const { addAppointment, loading, error, availability, getDoctors, doctors } = useContext(AppointmentContext);
@@ -85,6 +88,25 @@ export const AppointmentForm = () => {
     }
   };
 
+  const handleSelectSlot = ({ start }) => {
+    setAppointment({
+      ...appointment,
+      date: start, 
+    });
+  };
+  const events = [
+    {
+      title: 'Cita con Cirugía',
+      start: new Date(2024, 9, 20, 10, 0),
+      end: new Date(2024, 9, 20, 11, 0),
+    },
+    {
+      title: 'Consulta con la Dra. Victoria Gallardo',
+      start: new Date(2024, 9, 22, 12, 0),
+      end: new Date(2024, 9, 22, 13, 0),
+    },
+  ];
+
   return (
     <Container className="mt-4 appointment-form-container">
       <h2>Solicitar Cita</h2>
@@ -142,7 +164,22 @@ export const AppointmentForm = () => {
             ))}
           </Form.Control>
         </Form.Group>
-
+        {/* <div style={{ height: 500, marginTop: '10px' }}>
+          <h3>Calendario de citas</h3>
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: 400, width: 400 }}
+            selectable
+            onSelectSlot={handleSelectSlot}
+            step={30} 
+            timeslots={2} 
+            defaultView="month" 
+            views={['month','week', 'day']} 
+          />
+        </div> */}
         <Form.Group controlId="formDate">
           <Form.Label>Fecha y Hora</Form.Label>
           <DatePicker
@@ -216,6 +253,9 @@ export const AppointmentForm = () => {
           Solicitar Cita
         </Button>
       </Form>
+
+
+
     </Container>
   );
 };
