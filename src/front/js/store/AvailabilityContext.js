@@ -14,6 +14,7 @@ const AvailabilityProvider = ({ children }) => {
     // Definir getAvailabilityByDate en el archivo donde está implementada
 
     const getAvailabilityByDate = async (doctorId, selectedDate) => {
+        console.log("Selected Date:", selectedDate); // Verifica el valor y tipo
         try {
             // Asegurarse de que la fecha esté en formato 'YYYY-MM-DD'
             const formattedDate = selectedDate.toISOString().split('T')[0];  // Formato YYYY-MM-DD
@@ -36,6 +37,7 @@ const AvailabilityProvider = ({ children }) => {
             return [];
         }
     };
+
 
 
 

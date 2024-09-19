@@ -112,12 +112,10 @@ export const AdminPanel = () => {
       return;
     }
 
-    // Combinamos la fecha seleccionada con la hora elegida
     const [hours, minutes] = currentDate.datetime.split(':');
     const combinedDate = new Date(selectedDate);
     combinedDate.setHours(hours, minutes);
 
-    // Convertimos la fecha a ISOString para enviar al backend
     const newDate = {
       speciality: currentDate.speciality,
       doctor_id: currentDate.doctor,
@@ -139,6 +137,7 @@ export const AdminPanel = () => {
       alert("There was an error creating or updating the date.");
     }
   };
+
 
 
 
@@ -182,32 +181,32 @@ export const AdminPanel = () => {
   // Función para obtener la disponibilidad del doctor por fecha seleccionada
   // Función para obtener la disponibilidad del doctor por fecha seleccionada
   const handleDateSelection = async (date) => {
-    // Verifica si 'date' es un objeto Date
     if (!(date instanceof Date) || isNaN(date.getTime())) {
       console.error('Invalid date:', date);
       alert('Please select a valid date.');
       return;
     }
 
-    setSelectedDate(date);
+    setSelectedDate(date); // Guarda la fecha seleccionada
+    const doctorId = currentDate.doctor;
 
-    const doctorId = currentDate.doctor; // Usar el doctor seleccionado
     if (!doctorId) {
       alert("Please select a doctor first.");
       return;
     }
 
-    // Convertimos la fecha seleccionada a YYYY-MM-DD
-    const selectedDateFormatted = date.toISOString().split('T')[0];
+    console.log("Selected Date before fetching availability:", date); // Verifica que sea un objeto Date
 
     try {
-      const availability = await getAvailabilityByDate(doctorId, selectedDateFormatted);
-      setAvailableTimes(availability); // Guardamos las horas disponibles
+      const availability = await getAvailabilityByDate(doctorId, date); // Pasa el objeto date directamente
+      setAvailableTimes(availability);
     } catch (error) {
       console.error('Error fetching availability:', error);
       alert('Error fetching availability');
     }
   };
+
+
 
 
 
@@ -299,7 +298,11 @@ export const AdminPanel = () => {
                 as="select"
                 name="doctor"
                 value={currentDate.doctor}
-                onChange={handleDateChange}
+                onChange={(e) => {
+                  handleDateChange(e); // Actualiza el doctor
+                  setAvailableTimes([]); // Reinicia las horas disponibles
+                  setSelectedDate(new Date()); // Reinicia la fecha seleccionada
+                }}
                 required
               >
                 <option value="">Select a doctor</option>
@@ -314,7 +317,9 @@ export const AdminPanel = () => {
             {/* Calendario para seleccionar fecha */}
             <Form.Group controlId="formCalendar" className="mb-3">
               <Form.Label>Select Date</Form.Label>
-              <Calendar onChange={(date) => handleDateSelection(currentDate.doctor, date)} value={selectedDate} />
+              <Calendar onChange={handleDateSelection} value={selectedDate} />
+
+
             </Form.Group>
 
             {/* Mostrar horas disponibles solo si hay horas */}

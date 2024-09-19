@@ -167,18 +167,20 @@ def create_date():
     # Convertir la fecha y hora a formato datetime
     appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    # Verificar disponibilidad del doctor en esa fecha y hora
-    availability = Availability.query.filter_by(
+    # Obtener el día de la semana (0=Lunes, 6=Domingo)
+    day_of_week = appointment_datetime.weekday()
+
+    # Verificar disponibilidad del doctor en `WeeklyAvailability` para el día de la semana correspondiente
+    weekly_availability = WeeklyAvailability.query.filter_by(
         doctor_id=body['doctor_id'],
-        date=appointment_datetime.date(),
-        is_available=True
+        day_of_week=day_of_week
     ).first()
 
-    if not availability:
-        return jsonify({"message": "No availability found for this doctor on this date"}), 400
+    if not weekly_availability:
+        return jsonify({"message": "El doctor no tiene disponibilidad en ese día de la semana"}), 400
 
     # Verificar que la hora seleccionada está dentro del rango de disponibilidad
-    if not (availability.start_time <= appointment_datetime.time() <= availability.end_time):
+    if not (weekly_availability.start_time <= appointment_datetime.time() <= weekly_availability.end_time):
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
 
     # Verificar que no haya otras citas a la misma hora
@@ -205,6 +207,7 @@ def create_date():
     db.session.commit()
 
     return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
+
 
 
 
