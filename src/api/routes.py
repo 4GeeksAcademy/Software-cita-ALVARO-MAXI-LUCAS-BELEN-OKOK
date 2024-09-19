@@ -1,6 +1,6 @@
 from datetime import date, timedelta, datetime
 from flask import request, jsonify, Blueprint
-from api.models import db, User, Date, Availability
+from api.models import db, User, Date, WeeklyAvailability
 from api.utils import APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
@@ -339,16 +339,10 @@ def get_doctors():
 
 @api.route('/doctor/<int:doctor_id>/availability', methods=['GET'])
 @jwt_required()
-def get_doctor_availability(doctor_id):
-    date_str = request.args.get('date')
+def get_weekly_availability(doctor_id):
+    availabilities = WeeklyAvailability.query.filter_by(doctor_id=doctor_id).all()
+    return jsonify([availability.serialize() for availability in availabilities]), 200
 
-    if not date_str:
-        return jsonify({"error": "Missing or invalid 'date' parameter"}), 400
-
-    try:
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-    except ValueError:
-        return jsonify({"error": f"Invalid date format, should be 'YYYY-MM-DD'. Received: {date_str}"}), 400
 
     # Filtrar las citas que ya están reservadas para ese doctor en esa fecha
     appointments = Date.query.filter(
@@ -374,61 +368,23 @@ def get_doctor_availability(doctor_id):
 
 
 
+# Ruta para crear disponibilidad semanal
 @api.route('/doctor/<int:doctor_id>/availability', methods=['POST'])
 @jwt_required()
-def create_doctor_availability(doctor_id):
+def create_weekly_availability(doctor_id):
     """
-    Creates a new availability slot for a doctor.
-
-    Args:
-        doctor_id (int): The ID of the doctor.
-
-    Request Body:
-        - date (string): The date of the availability slot in YYYY-MM-DD format.
-        - start_time (string): The start time of the availability slot in HH:MM:SS format.
-        - end_time (string): The end time of the availability slot in HH:MM:SS format.
-
-    Returns:
-        - A JSON response with the newly created availability slot.
+    Crea una disponibilidad semanal para un doctor.
     """
     data = request.get_json()
-    date = datetime.datetime.strptime(data.get('date'), '%Y-%m-%d').date()
-    start_time = datetime.datetime.strptime(data.get('start_time'), '%H:%M:%S').time()
-    end_time = datetime.datetime.strptime(data.get('end_time'), '%H:%M:%S').time()
+    day_of_week = data.get('day_of_week')
+    start_time = datetime.strptime(data.get('start_time'), '%H:%M').time()
+    end_time = datetime.strptime(data.get('end_time'), '%H:%M').time()
 
-    # Create a new availability slot
-    availability = Availability(doctor_id=doctor_id, date=date, start_time=start_time, end_time=end_time)
-    db.session.add(availability)
-    db.session.commit()
-
-    return jsonify(availability.serialize()), 201
-
-
-
-@api.route('/availability', methods=['GET'])
-def get_availability():
-    availabilities = Availability.query.all()
-    availabilities_serialize = [availability.serialize() for availability in availabilities]
-    return jsonify(availabilities_serialize), 200
-
-
-
-# Crear una disponibilidad general para todos los doctores
-@api.route('/availability', methods=['POST'])
-def create_availability():
-    body = request.get_json()
-
-    # Asegúrate de que el doctor_id está presente en la solicitud
-    doctor_id = body.get('doctor_id')
-    if not doctor_id:
-        return jsonify({"error": "Doctor ID is required"}), 400
-
-    availability = Availability(
-        doctor_id=doctor_id,  # Ahora se asigna el doctor_id desde el frontend
-        date=datetime.strptime(body['date'], "%Y-%m-%d").date(),
-        start_time=datetime.strptime(body['start_time'], "%H:%M").time(),
-        end_time=datetime.strptime(body['end_time'], "%H:%M").time(),
-        is_available=True
+    availability = WeeklyAvailability(
+        doctor_id=doctor_id,
+        day_of_week=day_of_week,
+        start_time=start_time,
+        end_time=end_time
     )
 
     db.session.add(availability)
@@ -437,39 +393,80 @@ def create_availability():
     return jsonify(availability.serialize()), 201
 
 
-
-
-
-#Actualizar disponibilidad
-@api.route('/availability/<int:availability_id>', methods=['PUT'])
+# Obtener disponibilidad de un doctor por día específico (basado en la semana)
+@api.route('/doctor/<int:doctor_id>/availability-by-date', methods=['GET'])
 @jwt_required()
-def update_availability(availability_id):
-    body = request.get_json()
-    availability = Availability.query.get(availability_id)
-    
-    if not availability:
-        return jsonify({"message": "Availability not found"}), 404
+def get_availability_by_date(doctor_id):
+    """
+    Obtener la disponibilidad de un doctor para una fecha específica.
+    """
+    date_str = request.args.get('date')
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format, use 'YYYY-MM-DD'"}), 400
 
-    availability.date = datetime.strptime(body['date'], "%Y-%m-%d").date()
-    availability.start_time = datetime.strptime(body['start_time'], "%H:%M").time()
-    availability.end_time = datetime.strptime(body['end_time'], "%H:%M").time()
-    availability.is_available = body.get('is_available', availability.is_available)
+    day_of_week = target_date.weekday()  # 0 = lunes, 6 = domingo
+    availabilities = WeeklyAvailability.query.filter_by(doctor_id=doctor_id, day_of_week=day_of_week).all()
 
-    db.session.commit()
-    
-    return jsonify({"message": "Availability updated successfully", "availability": availability.serialize()}), 200
+    return jsonify([availability.serialize() for availability in availabilities]), 200
 
-#Elimninar disponibilidad
-@api.route('/availability/<int:availability_id>', methods=['DELETE'])
+@api.route('/doctor/<int:doctor_id>/availability/<int:availability_id>', methods=['DELETE'])
 @jwt_required()
-def delete_availability(availability_id):
-    availability = Availability.query.get(availability_id)
-    
+def delete_weekly_availability(doctor_id, availability_id):
+    availability = WeeklyAvailability.query.get(availability_id)
     if not availability:
         return jsonify({"message": "Availability not found"}), 404
 
     db.session.delete(availability)
     db.session.commit()
-    
+
     return jsonify({"message": "Availability deleted successfully"}), 200
+
+
+@api.route('/doctor/<int:doctor_id>/specific-availability-by-date', methods=['GET'])
+@jwt_required()
+def get_specific_availability_by_date(doctor_id):
+    date_str = request.args.get('date')
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format, use 'YYYY-MM-DD'"}), 400
+
+    day_of_week = target_date.weekday()  # 0 = lunes, 6 = domingo
+    availabilities = WeeklyAvailability.query.filter_by(doctor_id=doctor_id, day_of_week=day_of_week).all()
+
+    return jsonify([availability.serialize() for availability in availabilities]), 200
+
+# Ruta para actualizar la disponibilidad semanal de un doctor
+@api.route('/doctor/<int:doctor_id>/availability/<int:availability_id>', methods=['PUT'])
+@jwt_required()
+def update_weekly_availability(doctor_id, availability_id):
+    """
+    Actualiza una disponibilidad semanal para un doctor.
+    """
+    body = request.get_json()
+    availability = WeeklyAvailability.query.filter_by(id=availability_id, doctor_id=doctor_id).first()
+
+    if not availability:
+        return jsonify({"message": "Availability not found"}), 404
+
+    # Actualizar los campos
+    availability.day_of_week = body.get('day_of_week', availability.day_of_week)
+    availability.start_time = datetime.strptime(body.get('start_time'), '%H:%M').time()
+    availability.end_time = datetime.strptime(body.get('end_time'), '%H:%M').time()
+    availability.is_available = body.get('is_available', availability.is_available)
+
+    db.session.commit()
+
+    return jsonify(availability.serialize()), 200
+
+
+@api.route('/availability', methods=['GET'])
+@jwt_required()
+def get_all_availabilities():
+    availabilities = WeeklyAvailability.query.all()
+    return jsonify([availability.serialize() for availability in availabilities]), 200
+
+
 

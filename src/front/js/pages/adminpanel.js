@@ -5,13 +5,15 @@ import { AvailabilityContext } from '../store/AvailabilityContext';
 import DateTable from '../component/DateTable';
 import DoctorTable from '../component/DoctorTable';
 import AvailabilityTable from '../component/AvailabilityTable';
+import Calendar from 'react-calendar'; // Importamos el calendario de React
+import 'react-calendar/dist/Calendar.css'; // Importamos los estilos del calendario
 import { Button, Modal, Form, Spinner, Alert, Card, Row, Col } from 'react-bootstrap';
 import { FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
 
 export const AdminPanel = () => {
   const { dates, addDate, updateDate, removeDate, loading: datesLoading, error: datesError } = useContext(DateContext);
   const { doctors, addDoctor, updateDoctor, removeDoctor, loading: doctorsLoading, error: doctorsError } = useContext(DoctorContext);
-  const { availabilities, addAvailability, updateAvailability, removeAvailability, loading: availabilitiesLoading, error: availabilitiesError } = useContext(AvailabilityContext);
+  const { availabilities, addAvailability, updateAvailability, removeAvailability, loading: availabilitiesLoading, error: availabilitiesError, getAvailabilityByDate } = useContext(AvailabilityContext);
 
   // Estados para gestionar la apertura y cierre de modales
   const [showDateModal, setShowDateModal] = useState(false);
@@ -23,6 +25,9 @@ export const AdminPanel = () => {
   const [currentDate, setCurrentDate] = useState({ speciality: '', doctor: '', datetime: '', reason_for_appointment: '', date_type: '', user_id: '' });
   const [currentDoctor, setCurrentDoctor] = useState({ name: '', email: '', speciality: '', password: '', last_name: '', document_type: '', document_number: '', address: '', phone: '' });
   const [currentAvailability, setCurrentAvailability] = useState({ doctor_id: '', date: '', start_time: '', end_time: '', is_available: true });
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [availableTimes, setAvailableTimes] = useState([]);
 
   // Estado para gestionar la lista de usuarios
   const [users, setUsers] = useState([]);
@@ -98,14 +103,25 @@ export const AdminPanel = () => {
     setCurrentAvailability({ ...currentAvailability, [name]: newValue });
   };
 
-  // Funciones para manejar el envío de datos
+  // Función para manejar el envío de la cita
   const handleDateSubmit = async (e) => {
     e.preventDefault();
 
+    if (!currentDate.datetime) {
+      alert("Please select a valid time.");
+      return;
+    }
+
+    // Combinamos la fecha seleccionada con la hora elegida
+    const [hours, minutes] = currentDate.datetime.split(':');
+    const combinedDate = new Date(selectedDate);
+    combinedDate.setHours(hours, minutes);
+
+    // Convertimos la fecha a ISOString para enviar al backend
     const newDate = {
       speciality: currentDate.speciality,
       doctor_id: currentDate.doctor,
-      datetime: new Date(currentDate.datetime).toISOString(),
+      datetime: combinedDate.toISOString(),  // Combinación de fecha y hora
       reason_for_appointment: currentDate.reason_for_appointment,
       date_type: currentDate.date_type,
       user_id: currentDate.user_id
@@ -123,6 +139,9 @@ export const AdminPanel = () => {
       alert("There was an error creating or updating the date.");
     }
   };
+
+
+
 
   const handleDoctorSubmit = async (e) => {
     e.preventDefault();
@@ -159,6 +178,38 @@ export const AdminPanel = () => {
     }
     handleCloseModal();
   };
+
+  // Función para obtener la disponibilidad del doctor por fecha seleccionada
+  // Función para obtener la disponibilidad del doctor por fecha seleccionada
+  const handleDateSelection = async (date) => {
+    // Verifica si 'date' es un objeto Date
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      console.error('Invalid date:', date);
+      alert('Please select a valid date.');
+      return;
+    }
+
+    setSelectedDate(date);
+
+    const doctorId = currentDate.doctor; // Usar el doctor seleccionado
+    if (!doctorId) {
+      alert("Please select a doctor first.");
+      return;
+    }
+
+    // Convertimos la fecha seleccionada a YYYY-MM-DD
+    const selectedDateFormatted = date.toISOString().split('T')[0];
+
+    try {
+      const availability = await getAvailabilityByDate(doctorId, selectedDateFormatted);
+      setAvailableTimes(availability); // Guardamos las horas disponibles
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+      alert('Error fetching availability');
+    }
+  };
+
+
 
   return (
     <div className="container mt-5">
@@ -260,16 +311,30 @@ export const AdminPanel = () => {
               </Form.Control>
             </Form.Group>
 
-            <Form.Group controlId="formDateTime" className="mb-3">
-              <Form.Label>Date & Time</Form.Label>
-              <Form.Control
-                type="datetime-local"
-                name="datetime"
-                value={currentDate.datetime}
-                onChange={handleDateChange}
-                required
-              />
+            {/* Calendario para seleccionar fecha */}
+            <Form.Group controlId="formCalendar" className="mb-3">
+              <Form.Label>Select Date</Form.Label>
+              <Calendar onChange={(date) => handleDateSelection(currentDate.doctor, date)} value={selectedDate} />
             </Form.Group>
+
+            {/* Mostrar horas disponibles solo si hay horas */}
+            {availableTimes.length > 0 && (
+              <Form.Group controlId="formTime" className="mb-3">
+                <Form.Label>Available Time Slots</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="datetime"
+                  value={currentDate.datetime}
+                  onChange={handleDateChange}
+                  required
+                >
+                  <option value="">Select Time</option>
+                  {availableTimes.map((time, index) => (
+                    <option key={index} value={time}>{time}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            )}
 
             <Form.Group controlId="formReason" className="mb-3">
               <Form.Label>Reason for Appointment</Form.Label>
@@ -317,173 +382,6 @@ export const AdminPanel = () => {
           </Form>
         </Modal.Body>
       </Modal>
-
-      {/* Modal para agregar/editar doctor */}
-      <Modal show={showDoctorModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleDoctorSubmit}>
-            <Form.Group controlId="formName" className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={currentDoctor.name}
-                onChange={handleDoctorChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formEmail" className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={currentDoctor.email}
-                onChange={handleDoctorChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formDocumentType" className="mb-3">
-              <Form.Label>Document Type</Form.Label>
-              <Form.Control
-                type="text"
-                name="document_type"
-                value={currentDoctor.document_type}
-                onChange={handleDoctorChange}
-                placeholder="Enter document type"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formSpeciality" className="mb-3">
-              <Form.Label>Speciality</Form.Label>
-              <Form.Control
-                type="text"
-                name="speciality"
-                value={currentDoctor.speciality}
-                onChange={handleDoctorChange}
-                required
-              />
-            </Form.Group>
-
-            {!editMode && (
-              <Form.Group controlId="formPassword" className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  value={currentDoctor.password}
-                  onChange={handleDoctorChange}
-                  required={!editMode}
-                />
-              </Form.Group>
-            )}
-
-            <Form.Group controlId="formLastName" className="mb-3">
-              <Form.Label>Last Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="last_name"
-                value={currentDoctor.last_name}
-                onChange={handleDoctorChange}
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formPhone" className="mb-3">
-              <Form.Label>Phone</Form.Label>
-              <Form.Control
-                type="text"
-                name="phone"
-                value={currentDoctor.phone}
-                onChange={handleDoctorChange}
-              />
-            </Form.Group>
-
-            <Button variant="primary" type="submit" className="mt-3 w-100">
-              {editMode ? 'Update Doctor' : 'Add Doctor'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal para agregar/editar disponibilidad */}
-      <Modal show={showAvailabilityModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{editMode ? 'Edit Availability' : 'Add Availability'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleAvailabilitySubmit}>
-            <Form.Group controlId="formDoctorId" className="mb-3">
-              <Form.Label>Doctor</Form.Label>
-              <Form.Control
-                as="select"
-                name="doctor_id"
-                value={currentAvailability.doctor_id}
-                onChange={handleAvailabilityChange}
-                required
-              >
-                <option value="">Select a doctor</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId="formDate" className="mb-3">
-              <Form.Label>Date</Form.Label>
-              <Form.Control
-                type="date"
-                name="date"
-                value={currentAvailability.date}
-                onChange={handleAvailabilityChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formStartTime" className="mb-3">
-              <Form.Label>Start Time</Form.Label>
-              <Form.Control
-                type="time"
-                name="start_time"
-                value={currentAvailability.start_time}
-                onChange={handleAvailabilityChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formEndTime" className="mb-3">
-              <Form.Label>End Time</Form.Label>
-              <Form.Control
-                type="time"
-                name="end_time"
-                value={currentAvailability.end_time}
-                onChange={handleAvailabilityChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formIsAvailable" className="mb-3">
-              <Form.Check
-                type="checkbox"
-                name="is_available"
-                label="Is Available"
-                checked={currentAvailability.is_available}
-                onChange={handleAvailabilityChange}
-              />
-            </Form.Group>
-
-            <Button variant="primary" type="submit" className="mt-3 w-100">
-              {editMode ? 'Update Availability' : 'Add Availability'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
     </div>
   );
 };

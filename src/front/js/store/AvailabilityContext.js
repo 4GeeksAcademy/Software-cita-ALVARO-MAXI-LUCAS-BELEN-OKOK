@@ -9,6 +9,37 @@ const AvailabilityProvider = ({ children }) => {
 
     const getToken = () => localStorage.getItem('token');
 
+
+
+    // Definir getAvailabilityByDate en el archivo donde está implementada
+
+    const getAvailabilityByDate = async (doctorId, selectedDate) => {
+        try {
+            // Asegurarse de que la fecha esté en formato 'YYYY-MM-DD'
+            const formattedDate = selectedDate.toISOString().split('T')[0];  // Formato YYYY-MM-DD
+
+            const response = await fetch(`${process.env.BACKEND_URL}/doctor/${doctorId}/availability-by-date?date=${formattedDate}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error fetching availability. Status: ${response.status}`);
+            }
+
+            const availability = await response.json();
+            return availability;
+        } catch (error) {
+            console.error('Error fetching availability:', error);
+            return [];
+        }
+    };
+
+
+
+    // Obtener todas las disponibilidades de todos los doctores
     useEffect(() => {
         const token = getToken();
         const fetchAvailabilities = async () => {
@@ -36,16 +67,21 @@ const AvailabilityProvider = ({ children }) => {
         fetchAvailabilities();
     }, []);
 
+    // Agregar disponibilidad
     const addAvailability = async (availability) => {
         const token = getToken();
         try {
-            const response = await fetch(`${process.env.BACKEND_URL}/availability`, {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctor/${availability.doctor_id}/availability`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(availability),  // Asegúrate de que availability contiene doctor_id, start_time, end_time y date
+                body: JSON.stringify({
+                    day_of_week: availability.day_of_week,
+                    start_time: availability.start_time,
+                    end_time: availability.end_time,
+                }),
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -58,17 +94,21 @@ const AvailabilityProvider = ({ children }) => {
         }
     };
 
-
+    // Actualizar disponibilidad
     const updateAvailability = async (availability) => {
         const token = getToken();
         try {
-            const response = await fetch(`${process.env.BACKEND_URL}/availability/${availability.id}`, {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctor/${availability.doctor_id}/availability/${availability.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(availability),
+                body: JSON.stringify({
+                    day_of_week: availability.day_of_week,
+                    start_time: availability.start_time,
+                    end_time: availability.end_time,
+                }),
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -81,10 +121,11 @@ const AvailabilityProvider = ({ children }) => {
         }
     };
 
+    // Eliminar disponibilidad
     const removeAvailability = async (id) => {
         const token = getToken();
         try {
-            const response = await fetch(`${process.env.BACKEND_URL}/availability/${id}`, {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctor/availability/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,6 +151,7 @@ const AvailabilityProvider = ({ children }) => {
                 removeAvailability,
                 loading,
                 error,
+                getAvailabilityByDate
             }}
         >
             {children}

@@ -1,5 +1,11 @@
 import React from 'react';
 
+// Función para convertir day_of_week (número) a su representación textual
+const getDayOfWeek = (day) => {
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return days[day] || 'Invalid day';
+};
+
 const AvailabilityTable = ({ availabilities, handleShowModal, removeAvailability }) => {
     return (
         <table>
@@ -7,7 +13,7 @@ const AvailabilityTable = ({ availabilities, handleShowModal, removeAvailability
                 <tr>
                     <th>ID</th>
                     <th>Doctor ID</th>
-                    <th>Date</th>
+                    <th>Day of Week</th>
                     <th>Start Time</th>
                     <th>End Time</th>
                     <th>Is Available</th>
@@ -19,7 +25,7 @@ const AvailabilityTable = ({ availabilities, handleShowModal, removeAvailability
                     <tr key={availability.id}>
                         <td>{availability.id}</td>
                         <td>{availability.doctor_id}</td>
-                        <td>{availability.date}</td>
+                        <td>{getDayOfWeek(availability.day_of_week)}</td>
                         <td>{availability.start_time}</td>
                         <td>{availability.end_time}</td>
                         <td>{availability.is_available ? 'Yes' : 'No'}</td>
