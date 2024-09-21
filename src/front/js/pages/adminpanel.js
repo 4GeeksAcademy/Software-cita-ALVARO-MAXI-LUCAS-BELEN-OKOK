@@ -119,9 +119,8 @@ export const AdminPanel = () => {
     console.log("Formatted DateTime:", formattedDateTime); // Verifica el formato antes de enviar
 
     const newDate = {
-      speciality: currentDate.speciality,
       doctor_id: currentDate.doctor,
-      datetime: formattedDateTime, // Asegúrate de enviar el formato correcto
+      datetime: formattedDateTime,
       reason_for_appointment: currentDate.reason_for_appointment,
       date_type: currentDate.date_type,
       user_id: currentDate.user_id

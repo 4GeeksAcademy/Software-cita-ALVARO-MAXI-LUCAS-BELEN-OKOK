@@ -166,20 +166,19 @@ def get_date(date_id):
 def create_date():
     body = request.get_json()
 
-    # Intentar parsear con formato de milisegundos
     try:
+        # Convertir la fecha y hora a formato datetime esperado
         appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
     except ValueError:
         try:
-            # Intentar parsear sin milisegundos
             appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%SZ")
         except ValueError:
             return jsonify({"message": "Formato de fecha/hora inválido"}), 400
 
-    # Continuar con el resto de la lógica
+    # Obtener el día de la semana (0=Lunes, 6=Domingo)
     day_of_week = appointment_datetime.weekday()
 
-    # Verificar disponibilidad del doctor
+    # Verificar disponibilidad del doctor en `WeeklyAvailability` para el día de la semana correspondiente
     weekly_availability = WeeklyAvailability.query.filter_by(
         doctor_id=body['doctor_id'],
         day_of_week=day_of_week
@@ -188,7 +187,7 @@ def create_date():
     if not weekly_availability:
         return jsonify({"message": "El doctor no tiene disponibilidad en ese día de la semana"}), 400
 
-    # Verificar que la hora seleccionada esté dentro del rango
+    # Verificar que la hora seleccionada esté dentro del rango de disponibilidad
     if not (weekly_availability.start_time <= appointment_datetime.time() <= weekly_availability.end_time):
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
 
@@ -201,9 +200,8 @@ def create_date():
     if existing_appointment:
         return jsonify({"message": "Esta hora ya está reservada para otra cita"}), 400
 
-    # Crear la cita
+    # Crear la cita sin el campo 'speciality'
     new_date = Date(
-        speciality=body['speciality'],
         doctor=body['doctor_id'],
         datetime=appointment_datetime,
         reason_for_appointment=body['reason_for_appointment'],
@@ -215,6 +213,7 @@ def create_date():
     db.session.commit()
 
     return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
+
 
 
 
