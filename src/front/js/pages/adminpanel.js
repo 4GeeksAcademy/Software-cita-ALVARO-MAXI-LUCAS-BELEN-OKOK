@@ -271,14 +271,18 @@ export const AdminPanel = () => {
               <Card.Title className="text-center mb-4">
                 <FaUserMd className="me-2" /> Doctors
               </Card.Title>
-              <Button variant="primary" onClick={() => handleShowDoctorModal()}>
+              <Button variant="primary" onClick={() => handleShowDoctorModal({})}>
                 <FaUserMd className="me-2" /> Add Doctor
               </Button>
 
               {doctorsLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
               {doctorsError && <Alert variant="danger" className="mt-3">{doctorsError}</Alert>}
 
-              <DoctorTable doctors={doctors} handleShowModal={handleShowDoctorModal} removeDoctor={removeDoctor} />
+              <DoctorTable
+                doctors={doctors}
+                handleShowModal={handleShowDoctorModal}   // Se pasa correctamente la función
+                removeDoctor={removeDoctor}             // Asegúrate de que la función de eliminación esté vinculada
+              />
             </Card.Body>
           </Card>
         </Col>
@@ -290,14 +294,19 @@ export const AdminPanel = () => {
               <Card.Title className="text-center mb-4">
                 <FaClock className="me-2" /> Availability
               </Card.Title>
-              <Button variant="primary" onClick={() => handleShowAvailabilityModal()}>
+              <Button variant="primary" onClick={() => handleShowAvailabilityModal({})}>
                 <FaClock className="me-2" /> Add Availability
               </Button>
 
               {availabilitiesLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
               {availabilitiesError && <Alert variant="danger" className="mt-3">{availabilitiesError}</Alert>}
 
-              <AvailabilityTable availabilities={availabilities} handleShowModal={handleShowAvailabilityModal} removeAvailability={removeAvailability} doctors={doctors} />
+              <AvailabilityTable
+                availabilities={availabilities}
+                handleShowModal={handleShowAvailabilityModal}  // Se pasa correctamente la función
+                removeAvailability={removeAvailability}       // Asegúrate de que la función de eliminación esté vinculada
+                doctors={doctors}
+              />
             </Card.Body>
           </Card>
         </Col>

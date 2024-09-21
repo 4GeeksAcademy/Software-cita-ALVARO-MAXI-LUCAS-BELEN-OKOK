@@ -3,8 +3,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Container, Card, Row, Col } from 'react-bootstrap';
 import { TestimonialContext } from '../store/TestimonialContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar, faStarHalfAlt, faStar as farStar } from '@fortawesome/free-solid-svg-icons'; 
-import { faStar as farEmptyStar } from '@fortawesome/free-regular-svg-icons'; 
+import { faStar, faStarHalfAlt, faStar as farStar } from '@fortawesome/free-solid-svg-icons';
+import { faStar as farEmptyStar } from '@fortawesome/free-regular-svg-icons';
+import '../../styles/Testimonials.css';
+
 
 export const Testimonials = () => {
   const { testimonials } = useContext(TestimonialContext) || { testimonials: [] };
@@ -17,12 +19,12 @@ export const Testimonials = () => {
         {
           text: 'Excelente atención y resultados, me siento muy satisfecha con mi tratamiento.',
           author: 'María González',
-          rating: 4.5,       
+          rating: 4.5,
         },
         {
           text: 'Buena experiencia, aunque creo que podría mejorar en algunos aspectos.',
           author: 'Juan Pérez',
-          rating: 4,          
+          rating: 4,
         },
         {
           text: 'El mejor lugar para cuidar de tu salud visual. Muy recomendados.',
@@ -32,34 +34,34 @@ export const Testimonials = () => {
         {
           text: 'El tiempo de espera fue mayor al esperado, pero la atención fue buena.',
           author: 'Pedro Morales',
-          rating: 3.5,         
+          rating: 3.5,
         },
         {
           text: 'La atención no fue lo que esperaba y me sentí apurado durante la consulta.',
           author: 'Ana López',
-          rating: 2.5,         
+          rating: 2.5,
         },
         {
           text: 'Tuve una experiencia negativa, ya que mi cita se retrasó demasiado y no obtuve respuestas claras.',
           author: 'Luis Fernández',
-          rating: 2,         
+          rating: 2,
         },
       ]);
     }
   }, [testimonials]);
 
   const renderStars = (rating) => {
-    const fullStars = Math.floor(rating); 
-    const halfStar = rating % 1 !== 0;    
-    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0); 
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 !== 0;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
     return (
       <>
         {[...Array(fullStars)].map((_, i) => (
-          <FontAwesomeIcon icon={faStar} color="#FFD700" key={`full-${i}`} /> 
+          <FontAwesomeIcon icon={faStar} color="#FFD700" key={`full-${i}`} />
         ))}
-        {halfStar && <FontAwesomeIcon icon={faStarHalfAlt} color="#FFD700" />} 
+        {halfStar && <FontAwesomeIcon icon={faStarHalfAlt} color="#FFD700" />}
         {[...Array(emptyStars)].map((_, i) => (
-          <FontAwesomeIcon icon={farEmptyStar} color="#FFD700" key={`empty-${i}`} /> 
+          <FontAwesomeIcon icon={farEmptyStar} color="#FFD700" key={`empty-${i}`} />
         ))}
       </>
     );
@@ -68,7 +70,7 @@ export const Testimonials = () => {
   const displayTestimonials = testimonials.length ? testimonials : defaultTestimonials;
 
   return (
-    <Container className="mt-4 text-center">
+    <Container className="mt-5 mb-5 text-center">
       <h2>Testimonios de Pacientes</h2>
       <Row>
         {displayTestimonials.map((testimonial, index) => (

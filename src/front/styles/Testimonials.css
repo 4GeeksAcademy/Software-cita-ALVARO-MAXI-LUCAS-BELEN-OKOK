@@ -1,0 +1,20 @@
+.testimonial-container {
+    padding: 20px;
+    background-color: #f8f9fa; /* Fondo claro */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    transition: transform 0.3s ease;
+}
+
+.testimonial-container:hover {
+    transform: translateY(-5px); /* Efecto hover */
+}
+
+.star-rating {
+    margin-top: 10px;
+}
+
+.testimonial-author {
+    font-weight: bold;
+    margin-top: 10px;
+}
