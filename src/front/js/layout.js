@@ -38,39 +38,39 @@ const Layout = () => {
         <div>
             <RegisterProvider>
                 <TestimonialProvider>
-                    <AppointmentProvider>
-                        <AuthProvider>
-                            <BrowserRouter basename={basename}>
-                                <ScrollToTop>
-                                    <CustomNavbar />
-                                    <Routes>
-                                        <Route element={<Home />} path="/" />
-                                        <Route element={<Services />} path="/services" />
-                                        <Route element={<ServiceDetail />} path="/services/:id" />
-                                        <Route element={<AppointmentForm />} path="/appointment" />
-                                        <Route element={<Testimonials />} path="/testimonials" />
-                                        <Route element={<ContactForm />} path="/contact" />
-                                        <Route element={<Login />} path="/login" />
-                                        <Route element={<Signup />} path="/register" />
-                                        <Route
-                                            element={
-                                                <DateProvider>
-                                                    <DoctorProvider>
-                                                        <AvailabilityProvider>
+                    <AuthProvider>
+                        <AppointmentProvider>
+                            <AvailabilityProvider> {/* Move it here to make it available to all components */}
+                                <BrowserRouter basename={basename}>
+                                    <ScrollToTop>
+                                        <CustomNavbar />
+                                        <Routes>
+                                            <Route element={<Home />} path="/" />
+                                            <Route element={<Services />} path="/services" />
+                                            <Route element={<ServiceDetail />} path="/services/:id" />
+                                            <Route element={<AppointmentForm />} path="/appointment" />
+                                            <Route element={<Testimonials />} path="/testimonials" />
+                                            <Route element={<ContactForm />} path="/contact" />
+                                            <Route element={<Login />} path="/login" />
+                                            <Route element={<Signup />} path="/register" />
+                                            <Route
+                                                element={
+                                                    <DateProvider>
+                                                        <DoctorProvider>
                                                             <AdminPanel />
-                                                        </AvailabilityProvider>
-                                                    </DoctorProvider>
-                                                </DateProvider>
-                                            }
-                                            path="/admin"
-                                        />
-                                        <Route element={<h1>Not found!</h1>} />
-                                    </Routes>
-                                    <Footer />
-                                </ScrollToTop>
-                            </BrowserRouter>
-                        </AuthProvider>
-                    </AppointmentProvider>
+                                                        </DoctorProvider>
+                                                    </DateProvider>
+                                                }
+                                                path="/admin"
+                                            />
+                                            <Route element={<h1>Not found!</h1>} />
+                                        </Routes>
+                                        <Footer />
+                                    </ScrollToTop>
+                                </BrowserRouter>
+                            </AvailabilityProvider> {/* Closing tag for AvailabilityProvider */}
+                        </AppointmentProvider>
+                    </AuthProvider>
                 </TestimonialProvider>
             </RegisterProvider>
         </div>
