@@ -159,18 +159,27 @@ def get_date(date_id):
     return jsonify(date.serialize()), 200
 
 
+
+
 @api.route('/dates', methods=['POST'])
 @jwt_required()
 def create_date():
     body = request.get_json()
 
-    # Convertir la fecha y hora a formato datetime
-    appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    # Intentar parsear con formato de milisegundos
+    try:
+        appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError:
+        try:
+            # Intentar parsear sin milisegundos
+            appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            return jsonify({"message": "Formato de fecha/hora inválido"}), 400
 
-    # Obtener el día de la semana (0=Lunes, 6=Domingo)
+    # Continuar con el resto de la lógica
     day_of_week = appointment_datetime.weekday()
 
-    # Verificar disponibilidad del doctor en `WeeklyAvailability` para el día de la semana correspondiente
+    # Verificar disponibilidad del doctor
     weekly_availability = WeeklyAvailability.query.filter_by(
         doctor_id=body['doctor_id'],
         day_of_week=day_of_week
@@ -179,11 +188,11 @@ def create_date():
     if not weekly_availability:
         return jsonify({"message": "El doctor no tiene disponibilidad en ese día de la semana"}), 400
 
-    # Verificar que la hora seleccionada está dentro del rango de disponibilidad
+    # Verificar que la hora seleccionada esté dentro del rango
     if not (weekly_availability.start_time <= appointment_datetime.time() <= weekly_availability.end_time):
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
 
-    # Verificar que no haya otras citas a la misma hora
+    # Verificar que no haya otras citas a la misma hora para el doctor
     existing_appointment = Date.query.filter_by(
         doctor=body['doctor_id'],
         datetime=appointment_datetime
@@ -192,7 +201,7 @@ def create_date():
     if existing_appointment:
         return jsonify({"message": "Esta hora ya está reservada para otra cita"}), 400
 
-    # Si todo está bien, crear la nueva cita
+    # Crear la cita
     new_date = Date(
         speciality=body['speciality'],
         doctor=body['doctor_id'],
@@ -202,11 +211,11 @@ def create_date():
         user_id=body['user_id'],
     )
 
-    # Guardar la nueva cita
     db.session.add(new_date)
     db.session.commit()
 
     return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
+
 
 
 
@@ -396,7 +405,6 @@ def create_weekly_availability(doctor_id):
     return jsonify(availability.serialize()), 201
 
 
-# Obtener disponibilidad de un doctor por día específico (basado en la semana)
 @api.route('/doctor/<int:doctor_id>/availability-by-date', methods=['GET'])
 @jwt_required()
 def get_availability_by_date(doctor_id):
@@ -404,15 +412,31 @@ def get_availability_by_date(doctor_id):
     Obtener la disponibilidad de un doctor para una fecha específica.
     """
     date_str = request.args.get('date')
+    print(f"Doctor ID: {doctor_id}, Date: {date_str}")  # Verificar la entrada
+
     try:
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        print(f"Parsed Date: {target_date}")  # Confirmar que la fecha es correcta
     except ValueError:
         return jsonify({"error": "Invalid date format, use 'YYYY-MM-DD'"}), 400
 
     day_of_week = target_date.weekday()  # 0 = lunes, 6 = domingo
+    print(f"Day of Week: {day_of_week}")  # Verificar el día de la semana
+
     availabilities = WeeklyAvailability.query.filter_by(doctor_id=doctor_id, day_of_week=day_of_week).all()
 
+    print(f"Availabilities found: {len(availabilities)}")  # Mostrar la cantidad de disponibilidades encontradas
+
+    # Verificar cada disponibilidad
+    for availability in availabilities:
+        print(f"Availability: {availability.start_time} to {availability.end_time}")
+        print(f"Doctor ID: {doctor_id}, Date: {date_str}")
+        print(f"Parsed Date: {target_date}")
+        print(f"Day of Week: {day_of_week}")
+        print(f"Availabilities found: {len(availabilities)}")
+
     return jsonify([availability.serialize() for availability in availabilities]), 200
+
 
 @api.route('/doctor/<int:doctor_id>/availability/<int:availability_id>', methods=['DELETE'])
 @jwt_required()

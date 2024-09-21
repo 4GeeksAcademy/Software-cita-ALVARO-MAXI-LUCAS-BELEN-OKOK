@@ -112,14 +112,16 @@ export const AdminPanel = () => {
       return;
     }
 
-    const [hours, minutes] = currentDate.datetime.split(':');
-    const combinedDate = new Date(selectedDate);
-    combinedDate.setHours(hours, minutes);
+    const combinedDate = new Date(selectedDate.toISOString().split('T')[0] + 'T' + currentDate.datetime + ':00.000Z');
+    console.log("Combined Date:", combinedDate);  // Verifica la fecha
+
+    const formattedDateTime = combinedDate.toISOString().split('.')[0] + 'Z'; // Formatear sin milisegundos
+    console.log("Formatted DateTime:", formattedDateTime); // Verifica el formato antes de enviar
 
     const newDate = {
       speciality: currentDate.speciality,
       doctor_id: currentDate.doctor,
-      datetime: combinedDate.toISOString(),  // Combinación de fecha y hora
+      datetime: formattedDateTime, // Asegúrate de enviar el formato correcto
       reason_for_appointment: currentDate.reason_for_appointment,
       date_type: currentDate.date_type,
       user_id: currentDate.user_id
@@ -179,7 +181,7 @@ export const AdminPanel = () => {
   };
 
   // Función para obtener la disponibilidad del doctor por fecha seleccionada
-  // Función para obtener la disponibilidad del doctor por fecha seleccionada
+
   const handleDateSelection = async (date) => {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
       console.error('Invalid date:', date);
@@ -187,7 +189,7 @@ export const AdminPanel = () => {
       return;
     }
 
-    setSelectedDate(date); // Guarda la fecha seleccionada
+    setSelectedDate(date);
     const doctorId = currentDate.doctor;
 
     if (!doctorId) {
@@ -195,14 +197,43 @@ export const AdminPanel = () => {
       return;
     }
 
-    console.log("Selected Date before fetching availability:", date); // Verifica que sea un objeto Date
-
     try {
-      const availability = await getAvailabilityByDate(doctorId, date); // Pasa el objeto date directamente
-      setAvailableTimes(availability);
+      const availability = await getAvailabilityByDate(doctorId, date);
+      console.log("API Response for availability:", availability); // Verifica la respuesta aquí
+
+      if (Array.isArray(availability) && availability.length > 0) {
+        // Extraer y formatear los rangos de tiempo disponibles
+        const timeSlots = [];
+        availability.forEach(item => {
+          const startTime = item.start_time;
+          const endTime = item.end_time;
+          console.log(`Availability: ${startTime} to ${endTime}`);
+
+          // Generar intervalos de 30 minutos dentro del rango disponible
+          let current = startTime;
+          while (current < endTime) {
+            timeSlots.push(current);
+            // Añadir 30 minutos al tiempo actual
+            const [hours, minutes] = current.split(':');
+            let newMinutes = parseInt(minutes) + 30;
+            let newHours = parseInt(hours);
+            if (newMinutes >= 60) {
+              newHours += 1;
+              newMinutes = newMinutes - 60;
+            }
+            current = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+          }
+        });
+        setAvailableTimes(timeSlots);
+      } else {
+        console.error("Invalid or empty availability response:", availability);
+        alert("No available times found for the selected date.");
+        setAvailableTimes([]);
+      }
     } catch (error) {
       console.error('Error fetching availability:', error);
       alert('Error fetching availability');
+      setAvailableTimes([]);
     }
   };
 
@@ -314,6 +345,7 @@ export const AdminPanel = () => {
               </Form.Control>
             </Form.Group>
 
+
             {/* Calendario para seleccionar fecha */}
             <Form.Group controlId="formCalendar" className="mb-3">
               <Form.Label>Select Date</Form.Label>
@@ -323,7 +355,7 @@ export const AdminPanel = () => {
             </Form.Group>
 
             {/* Mostrar horas disponibles solo si hay horas */}
-            {availableTimes.length > 0 && (
+            {availableTimes.length > 0 ? (
               <Form.Group controlId="formTime" className="mb-3">
                 <Form.Label>Available Time Slots</Form.Label>
                 <Form.Control
@@ -339,6 +371,8 @@ export const AdminPanel = () => {
                   ))}
                 </Form.Control>
               </Form.Group>
+            ) : (
+              <p>No available time slots for the selected date.</p>
             )}
 
             <Form.Group controlId="formReason" className="mb-3">

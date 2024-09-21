@@ -19,7 +19,7 @@ class User(db.Model):
     password = db.Column(db.String(300), nullable=False)
     phone = db.Column(db.String(20), nullable=True)
 
-    dates = db.relationship('Date', backref='user', lazy=True)
+    dates = db.relationship('Date', backref='user', lazy=True, foreign_keys='Date.user_id')
     availabilities = db.relationship('WeeklyAvailability', backref='doctor', lazy=True)
 
     def set_password(self, password):
