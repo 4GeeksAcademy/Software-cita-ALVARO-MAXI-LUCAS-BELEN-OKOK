@@ -23,7 +23,9 @@ import { Signup } from "../js/pages/signup";
 import { RegisterProvider } from "./store/RegisterContext";
 import { DateProvider } from "./store/DateContext";
 import { DoctorProvider } from "./store/DoctorContext";
-import { AvailabilityProvider } from "./store/AvailabilityContext";;
+import { AvailabilityProvider } from "./store/AvailabilityContext";
+import { NextDates } from "../js/pages/nextdate";
+
 
 
 //create your first component
@@ -52,6 +54,7 @@ const Layout = () => {
                                         <Route element={<ContactForm />} path="/contact" />
                                         <Route element={<Login />} path="/login" />
                                         <Route element={<Signup />} path="/register" />
+                                        <Route element={<NextDates />} path="/users/:id" />
                                         <Route
                                             element={
                                                 <DateProvider>
