@@ -5,6 +5,10 @@
     one more css for each page that will contain the selected used 
     on that page only (the ones not reused in other pages).
 */
+body {
+    background-color: #FFF5E4; /* Color de fondo del cuerpo */
+  }
+  
 .custom-navbar {
     background-color: #074173 !important;
   }
