@@ -387,6 +387,160 @@ export const AdminPanel = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+            {/* Modal para agregar/editar doctor */}
+            <Modal show={showDoctorModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleDoctorSubmit}>
+            <Form.Group controlId="formName" className="mb-3">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="name"
+                value={currentDoctor.name}
+                onChange={handleDoctorChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formEmail" className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                name="email"
+                value={currentDoctor.email}
+                onChange={handleDoctorChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formDocumentType" className="mb-3">
+              <Form.Label>Document Type</Form.Label>
+              <Form.Control
+                type="text"
+                name="document_type"
+                value={currentDoctor.document_type}
+                onChange={handleDoctorChange}
+                placeholder="Enter document type"
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formSpeciality" className="mb-3">
+              <Form.Label>Speciality</Form.Label>
+              <Form.Control
+                type="text"
+                name="speciality"
+                value={currentDoctor.speciality}
+                onChange={handleDoctorChange}
+                required
+              />
+            </Form.Group>
+            {!editMode && (
+              <Form.Group controlId="formPassword" className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  name="password"
+                  value={currentDoctor.password}
+                  onChange={handleDoctorChange}
+                  required={!editMode}
+                />
+              </Form.Group>
+            )}
+            <Form.Group controlId="formLastName" className="mb-3">
+              <Form.Label>Last Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="last_name"
+                value={currentDoctor.last_name}
+                onChange={handleDoctorChange}
+              />
+            </Form.Group>
+            <Form.Group controlId="formPhone" className="mb-3">
+              <Form.Label>Phone</Form.Label>
+              <Form.Control
+                type="text"
+                name="phone"
+                value={currentDoctor.phone}
+                onChange={handleDoctorChange}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit" className="mt-3 w-100">
+              {editMode ? 'Update Doctor' : 'Add Doctor'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+      {/* Modal para agregar/editar disponibilidad */}
+      <Modal show={showAvailabilityModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{editMode ? 'Edit Availability' : 'Add Availability'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleAvailabilitySubmit}>
+            <Form.Group controlId="formDoctorId" className="mb-3">
+              <Form.Label>Doctor</Form.Label>
+              <Form.Control
+                as="select"
+                name="doctor_id"
+                value={currentAvailability.doctor_id}
+                onChange={handleAvailabilityChange}
+                required
+              >
+                <option value="">Select a doctor</option>
+                {doctors.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.name}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+            <Form.Group controlId="formDate" className="mb-3">
+              <Form.Label>Date</Form.Label>
+              <Form.Control
+                type="date"
+                name="date"
+                value={currentAvailability.date}
+                onChange={handleAvailabilityChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formStartTime" className="mb-3">
+              <Form.Label>Start Time</Form.Label>
+              <Form.Control
+                type="time"
+                name="start_time"
+                value={currentAvailability.start_time}
+                onChange={handleAvailabilityChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formEndTime" className="mb-3">
+              <Form.Label>End Time</Form.Label>
+              <Form.Control
+                type="time"
+                name="end_time"
+                value={currentAvailability.end_time}
+                onChange={handleAvailabilityChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formIsAvailable" className="mb-3">
+              <Form.Check
+                type="checkbox"
+                name="is_available"
+                label="Is Available"
+                checked={currentAvailability.is_available}
+                onChange={handleAvailabilityChange}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit" className="mt-3 w-100">
+              {editMode ? 'Update Availability' : 'Add Availability'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
