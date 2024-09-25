@@ -7,6 +7,9 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 import os
 from dotenv import load_dotenv
 from sqlalchemy.exc import SQLAlchemyError
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
 
 import resend
 
@@ -50,19 +53,22 @@ def create_user():
     db.session.add(new_user)
     db.session.commit()
 
-    # Enviar correo de bienvenida usando Resend
-    params = {
-        "from": os.getenv("RESEND_EMAIL_FROM"),
-        "to": os.getenv("RESEND_EMAIL_TESTING", new_user.email),  # Asumiendo que `new_user.email` tiene el correo del usuario
-        "subject": "Welcome to Our Platform!",
-        "html": "<strong>Welcome to our platform, we're glad to have you!</strong>"
-    }
+    # Configurar los detalles del correo electrónico de bienvenida
+    sender_email = os.getenv("SENDGRID_VERIFIED_EMAIL", "luck_caneo@hotmail.com")  # Tu correo verificado
+    recipient_email = new_user.email  # El correo del usuario recién registrado
+    message = Mail(
+        from_email=sender_email,
+        to_emails=recipient_email,
+        subject="Welcome to Our Platform!",
+        html_content="<strong>Welcome to our platform, we're glad to have you!</strong>"
+    )
 
     try:
-        r = resend.Emails.send(params)
-        print("Email sent successfully:", r)
+        sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))  # Utiliza tu API Key de SendGrid
+        response = sg.send(message)
+        print(f"Email sent successfully: {response.status_code}")
     except Exception as e:
-        print("Error sending email:", e)
+        print(f"Error sending email: {e}")
         return jsonify({"message": "User created, but there was an error sending the email"}), 500
 
     return jsonify({"message": "User created successfully!"}), 200
@@ -496,3 +502,62 @@ def get_all_availabilities():
 
 
 
+@api.route('/api/statistics', methods=['GET'])
+@jwt_required()
+def get_statistics():
+    # Example logic to get monthly appointments
+    from sqlalchemy import extract
+    from datetime import datetime
+
+    current_year = datetime.now().year
+    stats = []
+
+    for month in range(1, 13):
+        appointment_count = Date.query.filter(
+            extract('month', Date.datetime) == month,
+            extract('year', Date.datetime) == current_year
+        ).count()
+        stats.append({"month": datetime(1900, month, 1).strftime('%B'), "appointments": appointment_count})
+
+    return jsonify(stats), 200
+
+
+@api.route('/contact', methods=['POST'])
+def contact():
+    data = request.get_json()
+
+    # Verifica que todos los campos requeridos estén presentes
+    if not all(key in data for key in ('name', 'email', 'message')):
+        return jsonify({"error": "Todos los campos son obligatorios"}), 400
+
+    name = data['name']
+    email = data['email']
+    message = data['message']
+
+    # Envía el mensaje por correo electrónico usando SendGrid
+    try:
+        send_email(name, email, message)
+        return jsonify({"success": "Mensaje enviado con éxito"}), 200
+    except Exception as e:
+        print(f"Error al enviar el correo: {e}")
+        return jsonify({"error": "Error al enviar el mensaje"}), 500
+
+def send_email(name, email, message):
+    # Configuración de SendGrid
+    sendgrid_api_key = os.getenv('SENDGRID_API_KEY')  # Asegúrate de configurar la API Key en las variables de entorno
+    sender_email = 'luck_caneo@hotmail.com'  # Cambia esto por tu correo verificado en SendGrid
+
+    # Crear el correo electrónico
+    email_message = Mail(
+        from_email=sender_email,
+        to_emails='luck_caneo@hotmail.com',  # Correo de destino
+        subject=f'Nuevo mensaje de contacto de {name}',
+        html_content=f'<strong>Nombre:</strong> {name}<br><strong>Email:</strong> {email}<br><strong>Mensaje:</strong><br>{message}'
+    )
+
+    # Enviar el correo
+    sg = SendGridAPIClient(sendgrid_api_key)
+    response = sg.send(email_message)
+    print(response.status_code)
+    print(response.body)
+    print(response.headers)

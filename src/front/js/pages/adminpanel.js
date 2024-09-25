@@ -9,6 +9,8 @@ import Calendar from 'react-calendar'; // Importamos el calendario de React
 import 'react-calendar/dist/Calendar.css'; // Importamos los estilos del calendario
 import { Button, Modal, Form, Spinner, Alert, Card, Row, Col } from 'react-bootstrap';
 import { FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import AppointmentChart from '../component/AppointmentChart';
+
 
 export const AdminPanel = () => {
   const { dates, addDate, updateDate, removeDate, loading: datesLoading, error: datesError } = useContext(DateContext);
@@ -593,6 +595,10 @@ export const AdminPanel = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      <div className="mb-5">
+        <AppointmentChart />
+      </div>
 
     </div>
   );
