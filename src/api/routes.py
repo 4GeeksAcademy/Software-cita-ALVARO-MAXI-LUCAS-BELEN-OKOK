@@ -74,7 +74,7 @@ def create_user():
     return jsonify({"message": "User created successfully!"}), 200
 
 
-@api.route('/login' , methods=['POST'])
+@api.route('/login', methods=['POST'])
 def login():
     body = request.get_json()
     email = body['email']
@@ -82,7 +82,8 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
-        access_token = create_access_token(identity=email)
+        # Cambia la identidad a user.id en lugar de email
+        access_token = create_access_token(identity=user.id)
 
         return jsonify({
             'access_token': access_token,
@@ -90,6 +91,7 @@ def login():
         }), 200
     
     return jsonify({'error': 'Credenciales inválidas'}), 401
+
 
 
 # Ruta para actualizar un usuario
@@ -264,8 +266,7 @@ def delete_date(date_id):
 @api.route('/private/dates', methods=['GET'])
 @jwt_required()
 def get_private_dates():
-    current_user_id = get_jwt_identity()
-
+    current_user_id = get_jwt_identity()  # Esto ahora será el user_id directamente
     dates = Date.query.filter_by(user_id=current_user_id).all()
 
     dates_serialize = [date.serialize() for date in dates]
@@ -274,6 +275,7 @@ def get_private_dates():
         "message": "Your next appointments",
         "dates": dates_serialize
     }), 200
+
 
 
 @api.route('/doctors', methods=['POST'])

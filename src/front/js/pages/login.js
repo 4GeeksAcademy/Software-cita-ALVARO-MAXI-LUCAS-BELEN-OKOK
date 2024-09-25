@@ -17,7 +17,7 @@ export const Login = () => {
         if (success) {
             setShowSuccessModal(true);  // Muestra el modal de éxito
             setTimeout(() => {
-                navigate("/");  // Redirige al login después de 3 segundos
+                navigate("/dashboard");  // Redirige al login después de 3 segundos
             }, 3000);
             // Redirige al home después del login exitoso
         } else {
