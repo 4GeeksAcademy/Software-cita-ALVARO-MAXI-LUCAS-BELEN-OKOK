@@ -57,7 +57,7 @@ export const Home = () => {
 			<header className="text-center mt-5">
 				<h1 className="display-4">Bienvenido a Nuestra Clínica Oftalmológica</h1>
 				<p className="lead">Brindamos atención oftalmológica de calidad con la última tecnología y profesionales expertos.</p>
-				<Link to="/login" className="btn btn-primary mt-3">Iniciar Sesión</Link>
+				<Link to="/login" className="btn btn-primary mt-3">Iniciar Sesióno</Link>
 			</header>
 
 			{/* Carrusel de imágenes */}
