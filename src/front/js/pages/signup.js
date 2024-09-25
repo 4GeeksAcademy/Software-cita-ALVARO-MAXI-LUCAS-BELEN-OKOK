@@ -11,13 +11,10 @@ export const Signup = () => {
     const [documentType, setDocumentType] = useState("");
     const [documentNumber, setDocumentNumber] = useState("");
     const [address, setAddress] = useState("");
-    const [role, setRole] = useState("");
-    const [speciality, setSpeciality] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [phone, setPhone] = useState("");
-
 
     // Estado para el modal de éxito
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -45,12 +42,20 @@ export const Signup = () => {
     };
 
     return (
-        <div className="container d-flex justify-content-center align-items-center mt-5" style={{ minHeight: '100vh', background: '#f4f7f6' }}>
-            <div className="bg-white p-5 rounded shadow" style={{ maxWidth: '600px', width: '100%' }}>
-                <h1 className="mb-4 text-center" style={{ fontSize: '28px', fontWeight: '600', color: '#333' }}>Registro</h1>
+        <div className="container d-flex justify-content-center align-items-center mt-5" style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #5DEBD7 0%, #C5FF95 100%)'
+        }}>
+            <div className="bg-white p-5 rounded-4 shadow" style={{ maxWidth: '600px', width: '100%' }}>
+                <h1 className="mb-4 text-center" style={{
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    color: '#074173',
+                    textShadow: '1px 1px 2px #1679AB'
+                }}>Registro de Usuario</h1>
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="form-label">Nombre</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Nombre</label>
                         <input
                             type="text"
                             className="form-control"
@@ -59,8 +64,8 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Apellido</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Apellido</label>
                         <input
                             type="text"
                             className="form-control"
@@ -69,16 +74,17 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Tipo de documento</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Tipo de documento</label>
                         <select className="form-select" onChange={handelDocumentType}>
+                            <option value="">Seleccione...</option>
                             <option value="DNI">DNI</option>
                             <option value="NIE">NIE</option>
                             <option value="NIF">NIF</option>
                         </select>
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Número de documento</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Número de documento</label>
                         <input
                             type="text"
                             className="form-control"
@@ -87,8 +93,8 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Dirección</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Dirección</label>
                         <input
                             type="text"
                             className="form-control"
@@ -97,28 +103,8 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Rol</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={role}
-                            onChange={(e) => setRole(e.target.value)}
-                            disabled
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="form-label">Especialidad</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={speciality}
-                            onChange={(e) => setSpeciality(e.target.value)}
-                            disabled
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="form-label">Email</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Email</label>
                         <input
                             type="email"
                             className="form-control"
@@ -127,8 +113,8 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Password</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Contraseña</label>
                         <input
                             type="password"
                             className="form-control"
@@ -137,8 +123,8 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Confirmar Password</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Confirmar Contraseña</label>
                         <input
                             type="password"
                             className="form-control"
@@ -147,8 +133,8 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="form-label">Teléfono</label>
+                    <div className="mb-3">
+                        <label className="form-label" style={{ color: '#074173' }}>Teléfono</label>
                         <input
                             type="number"
                             className="form-control"
@@ -157,31 +143,41 @@ export const Signup = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary w-100" style={{ fontSize: '16px', padding: '10px' }}>Registrarse</button>
+                    <button type="submit" className="btn w-100 mt-3"
+                        style={{
+                            fontSize: '16px',
+                            padding: '10px',
+                            borderRadius: '30px',
+                            background: 'linear-gradient(135deg, #074173 0%, #1679AB 100%)',
+                            color: 'white',
+                            border: 'none',
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #1679AB 0%, #074173 100%)'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #074173 0%, #1679AB 100%)'}
+                    >Registrarse</button>
                 </form>
             </div>
-            {/* Modal de éxito */}
+
             {/* Modal de éxito */}
             {showSuccessModal && (
                 <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1050 }}>
-                    <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                        <div className="toast-header">
+                    <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true" style={{ backgroundColor: '#C5FF95' }}>
+                        <div className="toast-header" style={{ backgroundColor: '#5DEBD7', color: '#074173' }}>
                             <strong className="me-auto">¡Registro Exitoso!</strong>
                         </div>
-                        <div className="toast-body">
+                        <div className="toast-body" style={{ color: '#074173' }}>
                             <p>Serás redirigido al login en breve...</p>
                             <div className="progress mt-2" style={{ height: '5px' }}>
-                                <div 
-                                    className="progress-bar progress-bar-striped bg-success" 
-                                    role="progressbar" 
-                                    style={{ width: '100%', transition: 'width 3s linear' }}>
+                                <div
+                                    className="progress-bar progress-bar-striped"
+                                    role="progressbar"
+                                    style={{ backgroundColor: '#1679AB', width: '100%', transition: 'width 3s linear' }}>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
