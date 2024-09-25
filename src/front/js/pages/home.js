@@ -53,13 +53,13 @@ export const Home = () => {
 
 	return (
 		<div className="home-container">
-			{/* Encabezado */}
+			<div className="home-inicio p-4 shadow m-4">
 			<header className="text-center mt-5">
-				<h1 className="display-4">Bienvenido a Nuestra Clínica Oftalmológica</h1>
+				<h1 className="display-4">Bienvenidos a Nuestra Clínica Oftalmológica</h1>
 				<p className="lead">Brindamos atención oftalmológica de calidad con la última tecnología y profesionales expertos.</p>
-				<Link to="/login" className="btn btn-primary mt-3">Iniciar Sesióno</Link>
+				<Link to="/login" className="btn btn-primary mt-3">Iniciar Sesión</Link>
 			</header>
-
+			</div>
 			{/* Carrusel de imágenes */}
 			<Carousel className="mt-4" style={{ maxHeight: "500px", overflow: "hidden" }}>
 				<Carousel.Item>

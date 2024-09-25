@@ -1,9 +1,10 @@
 import React from "react";
 import { Container } from "react-bootstrap";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import '../../styles/home.css';
 
 export const Footer = () => (
-  <footer className="footer mt-auto py-4 text-center bg-dark text-white">
+  <footer className="footer mt-auto py-4 text-center bg-dark text-white custom-footer">
     <Container>
 
       <div className="social-icons d-flex justify-content-center mb-3">

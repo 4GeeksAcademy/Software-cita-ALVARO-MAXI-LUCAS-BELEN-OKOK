@@ -1,10 +1,12 @@
 import React from "react";
 import { Navbar as BootstrapNavbar, Nav, Container, NavDropdown } from "react-bootstrap";
 import { FaHome, FaUserAlt, FaCalendarAlt, FaEnvelope, FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import '../../styles/home.css';
+
 
 export const CustomNavbar = () => {
   return (
-    <BootstrapNavbar bg="dark" variant="dark" expand="lg" className="shadow-sm py-3 sticky-top">
+    <BootstrapNavbar variant="dark" expand="lg" className="shadow-sm py-3 sticky-top custom-navbar">
       <Container>
         <BootstrapNavbar.Brand href="/" className="font-weight-bold text-uppercase">
           Oftalmología
