@@ -71,22 +71,24 @@ export const Testimonials = () => {
 
   return (
     <Container className="mt-5 mb-5 text-center">
-      <h2>Testimonios de Pacientes</h2>
-      <Row>
-        {displayTestimonials.map((testimonial, index) => (
-          <Col md={4} key={index} className="mb-3">
-            <Card>
-              <Card.Body>
-                <Card.Text>"{testimonial.text}"</Card.Text>
-                <Card.Subtitle className="mb-2 text-muted">{testimonial.author}</Card.Subtitle>
-                <div className="star-rating">
-                  {renderStars(testimonial.rating)}
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      <div className="testimonial-container p-5 shadow-lg rounded">
+        <h2>Testimonios de Pacientes</h2>
+        <Row>
+          {displayTestimonials.map((testimonial, index) => (
+            <Col md={4} key={index} className="mb-3">
+              <Card>
+                <Card.Body>
+                  <Card.Text>"{testimonial.text}"</Card.Text>
+                  <Card.Subtitle className="mb-2 text-muted">{testimonial.author}</Card.Subtitle>
+                  <div className="star-rating">
+                    {renderStars(testimonial.rating)}
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </div>
     </Container>
   );
 };

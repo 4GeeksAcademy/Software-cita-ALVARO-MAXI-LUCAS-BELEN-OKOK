@@ -8,10 +8,18 @@
 body {
     background-color: #FFF5E4; /* Color de fondo del cuerpo */
   }
-  
+
 .custom-navbar {
     background-color: #074173 !important;
   }
 .custom-footer {
     background-color: #074173 !important;
   }
+
+  .button-maps {
+    background-color: #074173;
+  }
+  .button-enviar {
+    background-color: #074173;
+  }
+ 

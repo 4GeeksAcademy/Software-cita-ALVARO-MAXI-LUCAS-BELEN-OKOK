@@ -147,7 +147,7 @@ export const AppointmentForm = () => {
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
       {error && <Alert variant="danger">Error: {error.message}</Alert>}
 
-      <Card className="p-4 shadow">
+      <Card className="p-3 shadow">
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>

@@ -27,17 +27,14 @@ export const Login = () => {
     };
 
     return (
-        <div className="container d-flex justify-content-center align-items-center mt-5" style={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #5DEBD7 0%, #C5FF95 100%)' // Fondo utilizando dos colores de la paleta
-        }}>
-            <div className="bg-white p-5 rounded-4 shadow" style={{ maxWidth: '400px', width: '100%' }}>
+        <div className="container-login d-flex justify-content-center align-items-center m-4 bg-white shadow-lg rounded ">
+            <div className="bg-white p-4 rounded-4 shadow" style={{ maxWidth: '600px', height: '350px'}}>
                 <h1 className="mb-4 text-center" style={{
                     fontSize: '28px',
                     fontWeight: 'bold',
                     color: '#074173', // Color del título
                     textShadow: '1px 1px 2px #1679AB'
-                }}>Bienvenido a Oftalmología Ventilador</h1>
+                }}>Bienvenido a Clínica Oftalmológica</h1>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 input-group">
                         <span className="input-group-text" style={{ backgroundColor: '#074173', color: 'white' }}>

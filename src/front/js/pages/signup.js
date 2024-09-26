@@ -42,10 +42,7 @@ export const Signup = () => {
     };
 
     return (
-        <div className="container d-flex justify-content-center align-items-center mt-5" style={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #5DEBD7 0%, #C5FF95 100%)'
-        }}>
+        <div className="container d-flex justify-content-center align-items-center m-5 bg-white" >
             <div className="bg-white p-5 rounded-4 shadow" style={{ maxWidth: '600px', width: '100%' }}>
                 <h1 className="mb-4 text-center" style={{
                     fontSize: '28px',
