@@ -169,6 +169,59 @@ def get_date(date_id):
 
 
 
+def send_appointment_email(appointment):
+    sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
+    sender_email = os.getenv("SENDGRID_VERIFIED_EMAIL", "luck_caneo@hotmail.com")
+
+    if not sendgrid_api_key:
+        print("SendGrid API Key is missing")
+        return
+    
+    if not sender_email:
+        print("Sender email is missing or not verified in SendGrid")
+        return
+
+    # Obtener la información del usuario y del doctor
+    user = User.query.get(appointment.user_id)
+    doctor = User.query.get(int(appointment.doctor))
+
+    if not user or not doctor:
+        print("User or Doctor information is missing")
+        return
+
+    # Crear el contenido del correo
+    email_content = f"""
+    <h2>Confirmación de Cita Médica</h2>
+    <p>Estimado/a {user.name},</p>
+    <p>Su cita médica ha sido confirmada con los siguientes detalles:</p>
+    <ul>
+        <li><strong>Doctor:</strong> {doctor.name}</li>
+        <li><strong>Especialidad:</strong> {doctor.speciality}</li>
+        <li><strong>Fecha y Hora:</strong> {appointment.datetime.strftime('%Y-%m-%d %H:%M')}</li>
+        <li><strong>Razón de la Cita:</strong> {appointment.reason_for_appointment}</li>
+    </ul>
+    <p>Gracias por confiar en nosotros.</p>
+    """
+
+    # Crear el mensaje de correo
+    message = Mail(
+        from_email=sender_email,
+        to_emails=user.email,
+        subject="Confirmación de Cita Médica",
+        html_content=email_content
+    )
+
+    try:
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message)
+        print(f"Correo enviado con estado: {response.status_code}")
+        if response.status_code != 202:
+            print(f"Error al enviar correo: {response.body}")
+    except Exception as e:
+        print(f"Error al enviar el correo con SendGrid: {e}")
+
+
+
 @api.route('/dates', methods=['POST'])
 @jwt_required()
 def create_date():
@@ -183,10 +236,7 @@ def create_date():
         except ValueError:
             return jsonify({"message": "Formato de fecha/hora inválido"}), 400
 
-    # Obtener el día de la semana (0=Lunes, 6=Domingo)
     day_of_week = appointment_datetime.weekday()
-
-    # Verificar disponibilidad del doctor en `WeeklyAvailability` para el día de la semana correspondiente
     weekly_availability = WeeklyAvailability.query.filter_by(
         doctor_id=body['doctor_id'],
         day_of_week=day_of_week
@@ -195,11 +245,9 @@ def create_date():
     if not weekly_availability:
         return jsonify({"message": "El doctor no tiene disponibilidad en ese día de la semana"}), 400
 
-    # Verificar que la hora seleccionada esté dentro del rango de disponibilidad
     if not (weekly_availability.start_time <= appointment_datetime.time() <= weekly_availability.end_time):
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
 
-    # Verificar que no haya otras citas a la misma hora para el doctor
     existing_appointment = Date.query.filter_by(
         doctor=body['doctor_id'],
         datetime=appointment_datetime
@@ -208,7 +256,6 @@ def create_date():
     if existing_appointment:
         return jsonify({"message": "Esta hora ya está reservada para otra cita"}), 400
 
-    # Crear la cita sin el campo 'speciality'
     new_date = Date(
         doctor=body['doctor_id'],
         datetime=appointment_datetime,
@@ -219,6 +266,12 @@ def create_date():
 
     db.session.add(new_date)
     db.session.commit()
+
+    try:
+        send_appointment_email(new_date)  # Llama a la función para enviar el correo de confirmación
+    except Exception as e:
+        print(f"Error sending appointment email: {e}")
+        return jsonify({"message": "Cita creada, pero hubo un error al enviar el correo"}), 500
 
     return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
 

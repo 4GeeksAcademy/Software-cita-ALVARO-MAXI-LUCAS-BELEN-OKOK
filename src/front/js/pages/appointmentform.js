@@ -210,6 +210,7 @@ export const AppointmentForm = () => {
       )}
 
       {/* Step 2: Select Date and Time */}
+    
       {step === 2 && (
         <Card className="p-3 shadow">
           <h4><FaCalendarAlt className="me-2" /> Seleccionar Fecha y Hora</h4>
@@ -230,30 +231,38 @@ export const AppointmentForm = () => {
             </Col>
 
             <Col md={6}>
-              <Form.Group controlId="formAvailableTimes" className="mb-3">
-                <Form.Label><FaClock className="me-2" /> Horarios Disponibles</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="datetime"
-                  value={appointment.datetime}
-                  onChange={handleChange}
-                  required
-                  disabled={!availableTimes.length}
-                >
-                  <option value="">Seleccione un horario</option>
-                  {availableTimes.map((time, index) => (
-                    <option key={index} value={time}>
-                      {time}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
+              {availableTimes.length > 0 ? (
+                <Form.Group controlId="formAvailableTimes" className="mb-3">
+                  <Form.Label><FaClock className="me-2" /> Horarios Disponibles</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="datetime"
+                    value={appointment.datetime}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccione un horario</option>
+                    {availableTimes.map((time, index) => (
+                      <option key={index} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+              ) : (
+                <Alert variant="info" className="mt-2">
+                  No hay horarios disponibles para la fecha seleccionada.
+                </Alert>
+              )}
             </Col>
           </Row>
           <Button variant="secondary" onClick={handlePrevStep} className="me-2">Atrás</Button>
-          <Button variant="primary" onClick={handleNextStep}>Siguiente</Button>
+          <Button variant="primary" onClick={handleNextStep} disabled={!appointment.datetime}>
+            Siguiente
+          </Button>
         </Card>
       )}
+
 
       {/* Step 3: Confirm Appointment */}
       {step === 3 && (
