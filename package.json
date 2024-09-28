@@ -76,6 +76,8 @@
 		"@fortawesome/free-regular-svg-icons": "^6.6.0",
 		"@fortawesome/free-solid-svg-icons": "^6.6.0",
 		"@fortawesome/react-fontawesome": "^0.2.2",
+		"animate.css": "^4.1.1",
+		"aos": "^2.3.4",
 		"bootstrap": "^5.3.3",
 		"chart.js": "^4.4.4",
 		"moment": "^2.30.1",

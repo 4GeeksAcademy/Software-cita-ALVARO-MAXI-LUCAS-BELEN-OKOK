@@ -1,0 +1,40 @@
+/* Añadir animación de entrada a la sección */
+.animate__animated.animate__fadeInUp {
+    animation-duration: 1.2s;
+    animation-delay: 0.2s;
+}
+
+/* Efecto hover en el botón */
+.animated-button {
+    transition: all 0.3s ease-in-out;
+    font-weight: bold;
+}
+
+.animated-button:hover {
+    background-color: #fff;
+    color: #007bff;
+    transform: scale(1.05);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}
+/* Efecto Parallax */
+.carousel-item img {
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
+
+.carousel-item:hover img {
+    transform: scale(1.05);
+}
+
+/* Efectos adicionales en el botón de "Agendar Cita" */
+.animated-button {
+    transition: all 0.3s ease-in-out;
+    font-weight: bold;
+}
+
+.animated-button:hover {
+    background-color: #fff;
+    color: #007bff;
+    transform: scale(1.1);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}

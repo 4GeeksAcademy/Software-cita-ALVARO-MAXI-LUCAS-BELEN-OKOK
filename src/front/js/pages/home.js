@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Context } from "../store/appContext";
 import { Link } from "react-router-dom";
 import { Carousel, Container, Row, Col, Card, Button, Form, Alert } from "react-bootstrap";
@@ -7,10 +7,21 @@ import carouselImg1 from "../../img/imagen1.jpg";
 import carouselImg2 from "../../img/imagen2.jpg";
 import carouselImg3 from "../../img/imagen3.jpg";
 import Testimonials from "./testimonial";
-import { FaEye, FaStethoscope, FaCalendarCheck } from "react-icons/fa";
+import { FaEye, FaStethoscope, FaCalendarCheck, FaUserMd } from "react-icons/fa";
+import '../../styles/animate.css';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+
 
 
 export const Home = () => {
+	useEffect(() => {
+		AOS.init({
+			duration: 1200, // Duración de la animación
+			offset: 100,    // Desfase al activar la animación
+			once: true,     // Si la animación se debe activar solo una vez
+		});
+	}, []);
 	const { store } = useContext(Context);
 
 	const [contactForm, setContactForm] = useState({
@@ -54,6 +65,50 @@ export const Home = () => {
 	return (
 		<Container className="p-5 shadow-lg rounded" style={{ backgroundColor: "#f8f9fa" }}>
 			<div className="home-container">
+				{/* Carrusel de imágenes */}
+				<Carousel className="mt-4" style={{ maxHeight: "500px", overflow: "hidden" }} data-aos="fade-up">
+					<Carousel.Item>
+						<img className="d-block w-100" src={carouselImg1} alt="Primera imagen" style={{ maxHeight: "500px", objectFit: "cover" }} />
+						<Carousel.Caption>
+							<h3 data-aos="zoom-in">Cuida tu salud visual</h3>
+							<p data-aos="zoom-in">Los mejores tratamientos oftalmológicos a tu alcance.</p>
+						</Carousel.Caption>
+					</Carousel.Item>
+					<Carousel.Item>
+						<img className="d-block w-100" src={carouselImg2} alt="Segunda imagen" style={{ maxHeight: "500px", objectFit: "cover" }} />
+						<Carousel.Caption>
+							<h3 data-aos="zoom-in">Clínica con tecnología avanzada</h3>
+							<p data-aos="zoom-in">Contamos con equipos de última generación para tu diagnóstico.</p>
+						</Carousel.Caption>
+					</Carousel.Item>
+					<Carousel.Item>
+						<img className="d-block w-100" src={carouselImg3} alt="Tercera imagen" style={{ maxHeight: "500px", objectFit: "cover" }} />
+						<Carousel.Caption>
+							<h3 data-aos="zoom-in">Experiencia y profesionalismo</h3>
+							<p data-aos="zoom-in">Nuestros especialistas están listos para atenderte.</p>
+						</Carousel.Caption>
+					</Carousel.Item>
+				</Carousel>
+
+				{/* Sección Destacada para Agendar Cita */}
+				{/* Sección Destacada para Agendar Cita */}
+				<section className="mt-5 p-5 bg-primary text-white shadow m-4 rounded animate__animated animate__fadeInUp" data-aos="fade-up">
+					<Container className="text-center">
+						<Row className="align-items-center">
+							<Col md={8}>
+								<h2 className="display-5" data-aos="fade-right"><FaCalendarCheck className="me-2" /> ¿Listo para Agendar tu Cita?</h2>
+								<p className="lead" data-aos="fade-right">¡Reserva tu cita con uno de nuestros especialistas de manera rápida y sencilla!</p>
+							</Col>
+							<Col md={4}>
+								<Link to="/appointment" className="btn btn-light btn-lg w-100 mt-3 animated-button" data-aos="fade-left">
+									Agendar Cita Ahora
+								</Link>
+							</Col>
+						</Row>
+					</Container>
+				</section>
+
+
 				<div className="home-inicio p-4 shadow m-4">
 					<header className="text-center mt-5">
 						<h1 className="display-4">Bienvenidos a Nuestra Clínica Oftalmológica</h1>
@@ -61,42 +116,21 @@ export const Home = () => {
 						<Link to="/login" className="btn btn-primary mt-3">Iniciar Sesión</Link>
 					</header>
 				</div>
-				{/* Carrusel de imágenes */}
-				<Carousel className="mt-4" style={{ maxHeight: "500px", overflow: "hidden" }}>
-					<Carousel.Item>
-						<img className="d-block w-100" src={carouselImg1} alt="Primera imagen" style={{ maxHeight: "500px", objectFit: "cover" }} />
-						<Carousel.Caption>
-							<h3>Cuida tu salud visual</h3>
-							<p>Los mejores tratamientos oftalmológicos a tu alcance.</p>
-						</Carousel.Caption>
-					</Carousel.Item>
-					<Carousel.Item>
-						<img className="d-block w-100" src={carouselImg2} alt="Segunda imagen" style={{ maxHeight: "500px", objectFit: "cover" }} />
-						<Carousel.Caption>
-							<h3>Clínica con tecnología avanzada</h3>
-							<p>Contamos con equipos de última generación para tu diagnóstico.</p>
-						</Carousel.Caption>
-					</Carousel.Item>
-					<Carousel.Item>
-						<img className="d-block w-100" src={carouselImg3} alt="Tercera imagen" style={{ maxHeight: "500px", objectFit: "cover" }} />
-						<Carousel.Caption>
-							<h3>Experiencia y profesionalismo</h3>
-							<p>Nuestros especialistas están listos para atenderte.</p>
-						</Carousel.Caption>
-					</Carousel.Item>
-				</Carousel>
+
+
+
 
 				{/* Sección Sobre Nosotros */}
-				<section className="mt-5 p-5 bg-light shadow m-4">
+				<section className="mt-5 p-5 bg-light shadow m-4" data-aos="fade-up">
 					<Container>
 						<Row>
 							<Col md={6}>
-								<h2>Sobre Nosotros</h2>
-								<p>Somos una clínica oftalmológica con más de 20 años de experiencia brindando servicios de alta calidad para el cuidado de tu salud visual. Contamos con un equipo de especialistas dedicados y tecnología de última generación para asegurar diagnósticos precisos y tratamientos efectivos.</p>
-								<Button variant="primary">Más información</Button>
+								<h2 data-aos="fade-right">Sobre Nosotros</h2>
+								<p data-aos="fade-right">Somos una clínica oftalmológica con más de 20 años de experiencia brindando servicios de alta calidad para el cuidado de tu salud visual. Contamos con un equipo de especialistas dedicados y tecnología de última generación para asegurar diagnósticos precisos y tratamientos efectivos.</p>
+								<Button variant="primary" data-aos="zoom-in">Más información</Button>
 							</Col>
 							<Col md={6}>
-								<img src={appointmentImg} alt="Sobre Nosotros" className="img-fluid rounded" />
+								<img src={appointmentImg} alt="Sobre Nosotros" className="img-fluid rounded" data-aos="fade-left" />
 							</Col>
 						</Row>
 					</Container>
@@ -192,12 +226,12 @@ export const Home = () => {
 						<Row>
 							<Col md={6}>
 								<Card className="p-3">
-								<p>Si deseas más información sobre nuestros servicios o agendar una cita, no dudes en contactarnos.</p>
-								<ul className="list-unstyled">
-									<li><strong>Teléfono:</strong> +123 456 789</li>
-									<li><strong>Email:</strong> contacto@clinicaoftalmologica.com</li>
-									<li><strong>Dirección:</strong> Av. Siempre Viva 123, Ciudad</li>
-								</ul>
+									<p>Si deseas más información sobre nuestros servicios o agendar una cita, no dudes en contactarnos.</p>
+									<ul className="list-unstyled">
+										<li><strong>Teléfono:</strong> +123 456 789</li>
+										<li><strong>Email:</strong> contacto@clinicaoftalmologica.com</li>
+										<li><strong>Dirección:</strong> Av. Siempre Viva 123, Ciudad</li>
+									</ul>
 								</Card>
 							</Col>
 							<Col md={6}>

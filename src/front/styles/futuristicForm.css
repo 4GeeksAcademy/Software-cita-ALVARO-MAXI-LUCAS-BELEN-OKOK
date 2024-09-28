@@ -103,4 +103,57 @@ body {
       font-size: 16px;
     }
   }
+/* Efectos hover y transiciones */
+.carousel-item img {
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
+
+.carousel-item:hover img {
+    transform: scale(1.05);
+}
+
+/* Animación del botón */
+.animated-button {
+    transition: all 0.3s ease-in-out;
+    font-weight: bold;
+}
+
+.animated-button:hover {
+    background-color: #fff;
+    color: #007bff;
+    transform: scale(1.1);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Transiciones para las secciones */
+[data-aos="fade-up"] {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+[data-aos="fade-up"].aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+[data-aos="fade-left"] {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+[data-aos="fade-left"].aos-animate {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+[data-aos="fade-right"] {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+[data-aos="fade-right"].aos-animate {
+    opacity: 1;
+    transform: translateX(0);
+}
   
