@@ -248,356 +248,371 @@ export const AdminPanel = () => {
 
       <Row>
         {/* Gestión de Citas */}
+
         <Col md={4}>
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
-              <Card.Title className="text-center mb-4">
-                <FaCalendarAlt className="me-2" /> Dates
-              </Card.Title>
-              <Button variant="primary" onClick={() => handleShowDateModal()}>
-                <FaCalendarAlt className="me-2" /> Add Date
-              </Button>
+          <section id="dates-section">
+            <Card className="shadow-sm mb-4">
+              <Card.Body>
+                <Card.Title className="text-center mb-4">
+                  <FaCalendarAlt className="me-2" /> Dates
+                </Card.Title>
+                <Button variant="primary" onClick={() => handleShowDateModal()}>
+                  <FaCalendarAlt className="me-2" /> Add Date
+                </Button>
 
-              {datesLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
-              {datesError && <Alert variant="danger" className="mt-3">{datesError}</Alert>}
+                {datesLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
+                {datesError && <Alert variant="danger" className="mt-3">{datesError}</Alert>}
 
-              <DateTable dates={dates} handleShowModal={handleShowDateModal} removeDate={removeDate} />
-            </Card.Body>
-          </Card>
+                <DateTable dates={dates} handleShowModal={handleShowDateModal} removeDate={removeDate} />
+              </Card.Body>
+            </Card>
+          </section>
         </Col>
 
         {/* Gestión de Doctores */}
         <Col md={4}>
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
-              <Card.Title className="text-center mb-4">
-                <FaUserMd className="me-2" /> Doctors
-              </Card.Title>
-              <Button variant="primary" onClick={() => handleShowDoctorModal({})}>
-                <FaUserMd className="me-2" /> Add Doctor
-              </Button>
+          <section id="doctors-section">
+            <Card className="shadow-sm mb-4">
+              <Card.Body>
+                <Card.Title className="text-center mb-4">
+                  <FaUserMd className="me-2" /> Doctors
+                </Card.Title>
+                <Button variant="primary" onClick={() => handleShowDoctorModal({})}>
+                  <FaUserMd className="me-2" /> Add Doctor
+                </Button>
 
-              {doctorsLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
-              {doctorsError && <Alert variant="danger" className="mt-3">{doctorsError}</Alert>}
+                {doctorsLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
+                {doctorsError && <Alert variant="danger" className="mt-3">{doctorsError}</Alert>}
 
-              <DoctorTable
-                doctors={doctors}
-                handleShowModal={handleShowDoctorModal}   // Se pasa correctamente la función
-                removeDoctor={removeDoctor}             // Asegúrate de que la función de eliminación esté vinculada
-              />
-            </Card.Body>
-          </Card>
+                <DoctorTable
+                  doctors={doctors}
+                  handleShowModal={handleShowDoctorModal}   // Se pasa correctamente la función
+                  removeDoctor={removeDoctor}             // Asegúrate de que la función de eliminación esté vinculada
+                />
+              </Card.Body>
+            </Card>
+          </section>
         </Col>
 
         {/* Gestión de Disponibilidad */}
         <Col md={4}>
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
-              <Card.Title className="text-center mb-4">
-                <FaClock className="me-2" /> Availability
-              </Card.Title>
-              <Button variant="primary" onClick={() => handleShowAvailabilityModal({})}>
-                <FaClock className="me-2" /> Add Availability
-              </Button>
+          <section id="availability-section">
+            <Card className="shadow-sm mb-4">
+              <Card.Body>
+                <Card.Title className="text-center mb-4">
+                  <FaClock className="me-2" /> Availability
+                </Card.Title>
+                <Button variant="primary" onClick={() => handleShowAvailabilityModal({})}>
+                  <FaClock className="me-2" /> Add Availability
+                </Button>
 
-              {availabilitiesLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
-              {availabilitiesError && <Alert variant="danger" className="mt-3">{availabilitiesError}</Alert>}
+                {availabilitiesLoading && <Spinner animation="border" variant="primary" className="d-block mx-auto mt-3" />}
+                {availabilitiesError && <Alert variant="danger" className="mt-3">{availabilitiesError}</Alert>}
 
-              <AvailabilityTable
-                availabilities={availabilities}
-                handleShowModal={handleShowAvailabilityModal}  // Se pasa correctamente la función
-                removeAvailability={removeAvailability}       // Asegúrate de que la función de eliminación esté vinculada
-                doctors={doctors}
-              />
-            </Card.Body>
-          </Card>
+                <AvailabilityTable
+                  availabilities={availabilities}
+                  handleShowModal={handleShowAvailabilityModal}  // Se pasa correctamente la función
+                  removeAvailability={removeAvailability}       // Asegúrate de que la función de eliminación esté vinculada
+                  doctors={doctors}
+                />
+              </Card.Body>
+            </Card>
+          </section>
         </Col>
       </Row>
 
       {/* Modal para agregar/editar cita */}
-      <Modal show={showDateModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>{editMode ? 'Edit Date' : 'Add Date'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleDateSubmit}>
-            <Form.Group controlId="formSpeciality" className="mb-3">
-              <Form.Label>Speciality</Form.Label>
-              <Form.Control
-                type="text"
-                name="speciality"
-                value={currentDate.speciality}
-                onChange={handleDateChange}
-                placeholder="Enter speciality"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDoctor" className="mb-3">
-              <Form.Label>Doctor</Form.Label>
-              <Form.Control
-                as="select"
-                name="doctor"
-                value={currentDate.doctor}
-                onChange={(e) => {
-                  handleDateChange(e); // Actualiza el doctor
-                  setAvailableTimes([]); // Reinicia las horas disponibles
-                  setSelectedDate(new Date()); // Reinicia la fecha seleccionada
-                }}
-                required
-              >
-                <option value="">Select a doctor</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-
-
-            {/* Calendario para seleccionar fecha */}
-            <Form.Group controlId="formCalendar" className="mb-3">
-              <Form.Label>Select Date</Form.Label>
-              <Calendar onChange={handleDateSelection} value={selectedDate} />
-
-
-            </Form.Group>
-
-            {/* Mostrar horas disponibles solo si hay horas */}
-            {availableTimes.length > 0 ? (
-              <Form.Group controlId="formTime" className="mb-3">
-                <Form.Label>Available Time Slots</Form.Label>
+      <section id='#dates-section'>
+        <Modal show={showDateModal} onHide={handleCloseModal} centered>
+          <Modal.Header closeButton className="bg-primary text-white">
+            <Modal.Title>{editMode ? 'Edit Date' : 'Add Date'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleDateSubmit}>
+              <Form.Group controlId="formSpeciality" className="mb-3">
+                <Form.Label>Speciality</Form.Label>
                 <Form.Control
-                  as="select"
-                  name="datetime"
-                  value={currentDate.datetime}
+                  type="text"
+                  name="speciality"
+                  value={currentDate.speciality}
                   onChange={handleDateChange}
-                  required
-                >
-                  <option value="">Select Time</option>
-                  {availableTimes.map((time, index) => (
-                    <option key={index} value={time}>{time}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            ) : (
-              <p>No available time slots for the selected date.</p>
-            )}
-
-            <Form.Group controlId="formReason" className="mb-3">
-              <Form.Label>Reason for Appointment</Form.Label>
-              <Form.Control
-                as="textarea"
-                name="reason_for_appointment"
-                value={currentDate.reason_for_appointment}
-                onChange={handleDateChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDateType" className="mb-3">
-              <Form.Label>Type of Appointment</Form.Label>
-              <Form.Control
-                type="text"
-                name="date_type"
-                value={currentDate.date_type}
-                onChange={handleDateChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formUserId" className="mb-3">
-              <Form.Label>User</Form.Label>
-              <Form.Control
-                as="select"
-                name="user_id"
-                value={currentDate.user_id}
-                onChange={handleDateChange}
-                required
-              >
-                <option value="">Select a user</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name} {user.last_name} (ID: {user.id})
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-
-            <Button variant="primary" type="submit" className="mt-3 w-100">
-              {editMode ? 'Update Date' : 'Add Date'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal para agregar/editar doctor */}
-      <Modal show={showDoctorModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleDoctorSubmit}>
-            <Form.Group controlId="formDoctorName" className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={currentDoctor.name}
-                onChange={handleDoctorChange}
-                placeholder="Enter doctor's name"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDoctorEmail" className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={currentDoctor.email}
-                onChange={handleDoctorChange}
-                placeholder="Enter doctor's email"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDoctorSpeciality" className="mb-3">
-              <Form.Label>Speciality</Form.Label>
-              <Form.Control
-                type="text"
-                name="speciality"
-                value={currentDoctor.speciality}
-                onChange={handleDoctorChange}
-                placeholder="Enter speciality"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formDoctorDocumentType" className="mb-3">
-              <Form.Label>Document Type</Form.Label>
-              <Form.Control
-                as="select"
-                name="document_type"
-                value={currentDoctor.document_type}
-                onChange={handleDoctorChange}
-                required
-              >
-                <option value="">Select Document Type</option>
-                <option value="passport">Passport</option>
-                <option value="national_id">National ID</option>
-                <option value="driver_license">Driver License</option>
-              </Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId="formDoctorDocumentNumber" className="mb-3">
-              <Form.Label>Document Number</Form.Label>
-              <Form.Control
-                type="text"
-                name="document_number"
-                value={currentDoctor.document_number}
-                onChange={handleDoctorChange}
-                placeholder="Enter document number"
-                required
-              />
-            </Form.Group>
-
-            {!editMode && (
-              <Form.Group controlId="formDoctorPassword" className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  value={currentDoctor.password}
-                  onChange={handleDoctorChange}
-                  placeholder="Enter password"
+                  placeholder="Enter speciality"
                   required
                 />
               </Form.Group>
-            )}
 
-            <Button variant="primary" type="submit" className="mt-3 w-100">
-              {editMode ? 'Update Doctor' : 'Add Doctor'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+              <Form.Group controlId="formDoctor" className="mb-3">
+                <Form.Label>Doctor</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="doctor"
+                  value={currentDate.doctor}
+                  onChange={(e) => {
+                    handleDateChange(e); // Actualiza el doctor
+                    setAvailableTimes([]); // Reinicia las horas disponibles
+                    setSelectedDate(new Date()); // Reinicia la fecha seleccionada
+                  }}
+                  required
+                >
+                  <option value="">Select a doctor</option>
+                  {doctors.map((doctor) => (
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
+
+              {/* Calendario para seleccionar fecha */}
+              <Form.Group controlId="formCalendar" className="mb-3">
+                <Form.Label>Select Date</Form.Label>
+                <Calendar onChange={handleDateSelection} value={selectedDate} />
+
+
+              </Form.Group>
+
+              {/* Mostrar horas disponibles solo si hay horas */}
+              {availableTimes.length > 0 ? (
+                <Form.Group controlId="formTime" className="mb-3">
+                  <Form.Label>Available Time Slots</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="datetime"
+                    value={currentDate.datetime}
+                    onChange={handleDateChange}
+                    required
+                  >
+                    <option value="">Select Time</option>
+                    {availableTimes.map((time, index) => (
+                      <option key={index} value={time}>{time}</option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+              ) : (
+                <p>No available time slots for the selected date.</p>
+              )}
+
+              <Form.Group controlId="formReason" className="mb-3">
+                <Form.Label>Reason for Appointment</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="reason_for_appointment"
+                  value={currentDate.reason_for_appointment}
+                  onChange={handleDateChange}
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formDateType" className="mb-3">
+                <Form.Label>Type of Appointment</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="date_type"
+                  value={currentDate.date_type}
+                  onChange={handleDateChange}
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formUserId" className="mb-3">
+                <Form.Label>User</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="user_id"
+                  value={currentDate.user_id}
+                  onChange={handleDateChange}
+                  required
+                >
+                  <option value="">Select a user</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} {user.last_name} (ID: {user.id})
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
+              <Button variant="primary" type="submit" className="mt-3 w-100">
+                {editMode ? 'Update Date' : 'Add Date'}
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </section>
+
+      {/* Modal para agregar/editar doctor */}
+      <section id='#doctors-section'>
+        <Modal show={showDoctorModal} onHide={handleCloseModal} centered>
+          <Modal.Header closeButton className="bg-primary text-white">
+            <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleDoctorSubmit}>
+              <Form.Group controlId="formDoctorName" className="mb-3">
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="name"
+                  value={currentDoctor.name}
+                  onChange={handleDoctorChange}
+                  placeholder="Enter doctor's name"
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formDoctorEmail" className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={currentDoctor.email}
+                  onChange={handleDoctorChange}
+                  placeholder="Enter doctor's email"
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formDoctorSpeciality" className="mb-3">
+                <Form.Label>Speciality</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="speciality"
+                  value={currentDoctor.speciality}
+                  onChange={handleDoctorChange}
+                  placeholder="Enter speciality"
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formDoctorDocumentType" className="mb-3">
+                <Form.Label>Document Type</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="document_type"
+                  value={currentDoctor.document_type}
+                  onChange={handleDoctorChange}
+                  required
+                >
+                  <option value="">Select Document Type</option>
+                  <option value="passport">Passport</option>
+                  <option value="national_id">National ID</option>
+                  <option value="driver_license">Driver License</option>
+                </Form.Control>
+              </Form.Group>
+
+              <Form.Group controlId="formDoctorDocumentNumber" className="mb-3">
+                <Form.Label>Document Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="document_number"
+                  value={currentDoctor.document_number}
+                  onChange={handleDoctorChange}
+                  placeholder="Enter document number"
+                  required
+                />
+              </Form.Group>
+
+              {!editMode && (
+                <Form.Group controlId="formDoctorPassword" className="mb-3">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={currentDoctor.password}
+                    onChange={handleDoctorChange}
+                    placeholder="Enter password"
+                    required
+                  />
+                </Form.Group>
+              )}
+
+              <Button variant="primary" type="submit" className="mt-3 w-100">
+                {editMode ? 'Update Doctor' : 'Add Doctor'}
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </section>
 
       {/* Modal para agregar/editar disponibilidad */}
-      <Modal show={showAvailabilityModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>{editMode ? 'Edit Availability' : 'Add Availability'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleAvailabilitySubmit}>
-            <Form.Group controlId="formAvailabilityDoctor" className="mb-3">
-              <Form.Label>Doctor</Form.Label>
-              <Form.Control
-                as="select"
-                name="doctor_id"
-                value={currentAvailability.doctor_id}
-                onChange={handleAvailabilityChange}
-                required
-              >
-                <option value="">Select a doctor</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
+      <section id='#availability-section'>
+        <Modal show={showAvailabilityModal} onHide={handleCloseModal} centered>
+          <Modal.Header closeButton className="bg-primary text-white">
+            <Modal.Title>{editMode ? 'Edit Availability' : 'Add Availability'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleAvailabilitySubmit}>
+              <Form.Group controlId="formAvailabilityDoctor" className="mb-3">
+                <Form.Label>Doctor</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="doctor_id"
+                  value={currentAvailability.doctor_id}
+                  onChange={handleAvailabilityChange}
+                  required
+                >
+                  <option value="">Select a doctor</option>
+                  {doctors.map((doctor) => (
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
 
-            <Form.Group controlId="formAvailabilityDay" className="mb-3">
-              <Form.Label>Day of the Week</Form.Label>
-              <Form.Control
-                as="select"
-                name="day_of_week"
-                value={currentAvailability.day_of_week}
-                onChange={handleAvailabilityChange}
-                required
-              >
-                <option value="">Select a day</option>
-                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-                  <option key={index} value={index}>
-                    {day}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
+              <Form.Group controlId="formAvailabilityDay" className="mb-3">
+                <Form.Label>Day of the Week</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="day_of_week"
+                  value={currentAvailability.day_of_week}
+                  onChange={handleAvailabilityChange}
+                  required
+                >
+                  <option value="">Select a day</option>
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
+                    <option key={index} value={index}>
+                      {day}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
 
-            <Form.Group controlId="formAvailabilityStartTime" className="mb-3">
-              <Form.Label>Start Time</Form.Label>
-              <Form.Control
-                type="time"
-                name="start_time"
-                value={currentAvailability.start_time}
-                onChange={handleAvailabilityChange}
-                required
-              />
-            </Form.Group>
+              <Form.Group controlId="formAvailabilityStartTime" className="mb-3">
+                <Form.Label>Start Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  name="start_time"
+                  value={currentAvailability.start_time}
+                  onChange={handleAvailabilityChange}
+                  required
+                />
+              </Form.Group>
 
-            <Form.Group controlId="formAvailabilityEndTime" className="mb-3">
-              <Form.Label>End Time</Form.Label>
-              <Form.Control
-                type="time"
-                name="end_time"
-                value={currentAvailability.end_time}
-                onChange={handleAvailabilityChange}
-                required
-              />
-            </Form.Group>
+              <Form.Group controlId="formAvailabilityEndTime" className="mb-3">
+                <Form.Label>End Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  name="end_time"
+                  value={currentAvailability.end_time}
+                  onChange={handleAvailabilityChange}
+                  required
+                />
+              </Form.Group>
 
-            <Button variant="primary" type="submit" className="mt-3 w-100">
-              {editMode ? 'Update Availability' : 'Add Availability'}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+              <Button variant="primary" type="submit" className="mt-3 w-100">
+                {editMode ? 'Update Availability' : 'Add Availability'}
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </section>
 
       <div className="mb-5">
-        <AppointmentChart />
+        <section id="statistics-section">
+          <AppointmentChart />
+        </section>
       </div>
 
     </div>

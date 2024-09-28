@@ -136,7 +136,7 @@ const UserDashboard = () => {
         <Container className="mt-5">
             <h2 className="text-center">👁️ Bienvenido, {user?.name}!</h2>
 
-            <Button className="mb-4" onClick={logout}>Logout</Button>
+
 
             {/* Section for Notifications */}
             <Row className="mb-4">

@@ -1,11 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Container, Form, Button, Alert, Spinner, Row, Col, Card } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Spinner, Row, Col, Card, ProgressBar } from 'react-bootstrap';
 import { AppointmentContext } from '../store/AppointmentContext';
 import { AvailabilityContext } from '../store/AvailabilityContext';
 import { AuthContext } from '../store/AuthContext';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../styles/AppointmentForm.css';
+import { FaUser, FaEnvelope, FaUserMd, FaCalendarAlt, FaClock, FaClipboardList, FaFileMedical, FaCheckCircle } from 'react-icons/fa';
 
 export const AppointmentForm = () => {
   const { addAppointment, loading, error, doctors, getDoctors } = useContext(AppointmentContext);
@@ -29,6 +30,7 @@ export const AppointmentForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [step, setStep] = useState(1); // Step tracking
 
   // Fetch doctors on component mount
   useEffect(() => {
@@ -42,30 +44,22 @@ export const AppointmentForm = () => {
     }
   }, [appointment.doctor_id, appointment.date]);
 
-
   const fetchAvailableTimes = async (doctorId, date) => {
     try {
       const availabilities = await getAvailabilityByDate(doctorId, date);
-      console.log("Availabilities fetched:", availabilities);
-
-      // Transformar las disponibilidades a un array de horas como strings
-      const times = availabilities.map((availability) => {
+      const times = availabilities.flatMap((availability) => {
         const startTime = availability.start_time;
         const endTime = availability.end_time;
-
-        // Crear un array con intervalos de 30 minutos dentro del rango de tiempo
         const timesArray = [];
         let currentTime = new Date(`1970-01-01T${startTime}`);
         const endTimeObj = new Date(`1970-01-01T${endTime}`);
 
         while (currentTime <= endTimeObj) {
-          timesArray.push(
-            currentTime.toTimeString().substring(0, 5) // Formato "HH:mm"
-          );
-          currentTime = new Date(currentTime.getTime() + 30 * 60000); // Incrementar 30 minutos
+          timesArray.push(currentTime.toTimeString().substring(0, 5));
+          currentTime = new Date(currentTime.getTime() + 30 * 60000);
         }
         return timesArray;
-      }).flat(); // Aplana el array si hay múltiples disponibilidades
+      });
 
       setAvailableTimes(times);
     } catch (error) {
@@ -73,17 +67,30 @@ export const AppointmentForm = () => {
     }
   };
 
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAppointment((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDoctorChange = (e) => {
+    const doctorId = e.target.value;
+    const selectedDoctor = doctors.find((doc) => doc.id.toString() === doctorId);
+    setAppointment((prev) => ({
+      ...prev,
+      doctor_id: doctorId,
+      speciality: selectedDoctor ? selectedDoctor.speciality : '',
+    }));
+    setSelectedDoctor(selectedDoctor);
+    setAvailableTimes([]); // Reset available times
   };
 
   const handleDateChange = (date) => {
     setAppointment((prev) => ({ ...prev, date }));
     setAvailableTimes([]); // Reset available times when changing the date
   };
+
+  const handleNextStep = () => setStep((prevStep) => prevStep + 1);
+  const handlePrevStep = () => setStep((prevStep) => prevStep - 1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,14 +108,8 @@ export const AppointmentForm = () => {
 
       try {
         await addAppointment(formattedAppointment);
-
-        // Establece el mensaje de éxito
         setSuccessMessage('¡Cita solicitada exitosamente! Recibirá un correo electrónico con la confirmación.');
-
-        // Restablece el formulario
         resetForm();
-
-        // Limpia el mensaje de éxito después de 5 segundos
         setTimeout(() => setSuccessMessage(''), 5000);
       } catch (error) {
         console.error('Error al solicitar la cita:', error);
@@ -131,11 +132,12 @@ export const AppointmentForm = () => {
       date_type: '',
       user_id: userId,
     });
+    setStep(1);
   };
 
   return (
     <Container className="mt-4 appointment-form-container">
-      <h2 className="text-center mb-4">Solicitar Cita</h2>
+      <h2 className="text-center mb-4"><FaCalendarAlt className="me-2" /> Solicitar Cita</h2>
 
       {loading && (
         <div className="text-center my-3">
@@ -147,68 +149,74 @@ export const AppointmentForm = () => {
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
       {error && <Alert variant="danger">Error: {error.message}</Alert>}
 
-      <Card className="p-3 shadow">
-        <Form onSubmit={handleSubmit}>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formName" className="mb-3">
-                <Form.Label>Nombre</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="name"
-                  value={appointment.name}
-                  onChange={handleChange}
-                  placeholder="Ingrese su nombre"
-                  readOnly={!!user}
-                  required
-                />
-              </Form.Group>
-            </Col>
+      {/* Progress Bar */}
+      <ProgressBar now={(step / 3) * 100} className="mb-4" label={`${step} / 3`} />
 
-            <Col md={6}>
-              <Form.Group controlId="formEmail" className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  value={appointment.email}
-                  onChange={handleChange}
-                  placeholder="Ingrese su correo electrónico"
-                  readOnly={!!user}
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
+      {/* Step 1: Select Doctor and Speciality */}
+      {step === 1 && (
+        <Card className="p-3 shadow">
+          <h4><FaUserMd className="me-2" /> Seleccionar Doctor y Especialidad</h4>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formDoctor" className="mb-3">
-                <Form.Label>Doctor</Form.Label>
+                <Form.Label><FaUserMd className="me-2" /> Doctor</Form.Label>
                 <Form.Control
                   as="select"
                   name="doctor_id"
                   value={appointment.doctor_id}
-                  onChange={(e) => {
-                    handleChange(e);
-                    setSelectedDoctor(e.target.value);
-                    setAvailableTimes([]); // Reset available times on doctor change
-                  }}
+                  onChange={handleDoctorChange}
                   required
                 >
                   <option value="">Seleccione un doctor</option>
                   {doctors.map((doctor) => (
                     <option key={doctor.id} value={doctor.id}>
-                      {doctor.name} - {doctor.speciality}
+                      {doctor.name}
                     </option>
                   ))}
                 </Form.Control>
               </Form.Group>
+
             </Col>
 
             <Col md={6}>
+              <Form.Group controlId="formSpeciality" className="mb-3">
+                <Form.Label><FaFileMedical className="me-2" /> Especialidad</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="speciality"
+                  value={appointment.speciality}
+                  onChange={(e) => {
+                    handleChange(e);
+                    setAppointment((prev) => ({
+                      ...prev,
+                      doctor_id: '' // Resetea la selección del doctor al cambiar la especialidad
+                    }));
+                  }}
+                  required
+                >
+                  <option value="">Seleccione una especialidad</option>
+                  {[...new Set(doctors.map(doctor => doctor.speciality))].map((speciality, index) => (
+                    <option key={index} value={speciality}>
+                      {speciality}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+
+            </Col>
+          </Row>
+          <Button variant="primary" onClick={handleNextStep} className="mt-3 w-100">Siguiente</Button>
+        </Card>
+      )}
+
+      {/* Step 2: Select Date and Time */}
+      {step === 2 && (
+        <Card className="p-3 shadow">
+          <h4><FaCalendarAlt className="me-2" /> Seleccionar Fecha y Hora</h4>
+          <Row>
+            <Col md={6}>
               <Form.Group controlId="formDate" className="mb-3">
-                <Form.Label>Fecha de la Cita</Form.Label>
+                <Form.Label><FaCalendarAlt className="me-2" /> Fecha de la Cita</Form.Label>
                 <DatePicker
                   selected={appointment.date}
                   onChange={handleDateChange}
@@ -220,12 +228,10 @@ export const AppointmentForm = () => {
                 />
               </Form.Group>
             </Col>
-          </Row>
 
-          <Row>
             <Col md={6}>
               <Form.Group controlId="formAvailableTimes" className="mb-3">
-                <Form.Label>Horarios Disponibles</Form.Label>
+                <Form.Label><FaClock className="me-2" /> Horarios Disponibles</Form.Label>
                 <Form.Control
                   as="select"
                   name="datetime"
@@ -242,83 +248,61 @@ export const AppointmentForm = () => {
                   ))}
                 </Form.Control>
               </Form.Group>
-
             </Col>
+          </Row>
+          <Button variant="secondary" onClick={handlePrevStep} className="me-2">Atrás</Button>
+          <Button variant="primary" onClick={handleNextStep}>Siguiente</Button>
+        </Card>
+      )}
 
+      {/* Step 3: Confirm Appointment */}
+      {step === 3 && (
+        <Card className="p-3 shadow">
+          <h4><FaCheckCircle className="me-2" /> Confirmar Cita</h4>
+          <Row className="mb-3">
             <Col md={6}>
-              <Form.Group controlId="formType" className="mb-3">
-                <Form.Label>Tipo de Cita</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="type"
-                  value={appointment.type}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="in-person">Presencial</option>
-                  <option value="video">Videollamada</option>
-                  <option value="call">Llamada</option>
-                </Form.Control>
-              </Form.Group>
+              <p><strong><FaUser className="me-2" /> Nombre:</strong> {appointment.name}</p>
+            </Col>
+            <Col md={6}>
+              <p><strong><FaEnvelope className="me-2" /> Email:</strong> {appointment.email}</p>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col md={6}>
+              <p><strong><FaUserMd className="me-2" /> Doctor:</strong> {selectedDoctor ? selectedDoctor.name : 'No seleccionado'}</p>
+            </Col>
+            <Col md={6}>
+              <p><strong><FaFileMedical className="me-2" /> Especialidad:</strong> {appointment.speciality}</p>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col md={6}>
+              <p><strong><FaCalendarAlt className="me-2" /> Fecha:</strong> {appointment.date ? appointment.date.toLocaleDateString() : 'No seleccionada'}</p>
+            </Col>
+            <Col md={6}>
+              <p><strong><FaClock className="me-2" /> Horario:</strong> {appointment.datetime}</p>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col md={6}>
+              <p><strong><FaClipboardList className="me-2" /> Tipo de Cita:</strong>
+                {appointment.type === 'in-person' ? 'Presencial' : appointment.type === 'video' ? 'Videollamada' : 'Llamada'}
+              </p>
+            </Col>
+            <Col md={6}>
+              <p><strong><FaFileMedical className="me-2" /> Razón de la Cita:</strong> {appointment.reason_for_appointment}</p>
             </Col>
           </Row>
 
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formSpeciality" className="mb-3">
-                <Form.Label>Especialidad</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="speciality"
-                  value={appointment.speciality}
-                  onChange={handleChange}
-                  placeholder="Ingrese la especialidad"
-                  required
-                />
-              </Form.Group>
-            </Col>
-
-            <Col md={6}>
-              <Form.Group controlId="formReasonForAppointment" className="mb-3">
-                <Form.Label>Razón de la cita</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="reason_for_appointment"
-                  value={appointment.reason_for_appointment}
-                  onChange={handleChange}
-                  placeholder="Ingrese la razón de la cita"
-                  required
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={12}>
-              <Form.Group controlId="formDateType" className="mb-3">
-                <Form.Label>Tipo de consulta</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="date_type"
-                  value={appointment.date_type}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccione un tipo de consulta</option>
-                  <option value="Consulta médica">Consulta médica</option>
-                  <option value="Cita médica">Cita médica</option>
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          <Button variant="primary" type="submit" className="mt-3 w-100" disabled={loading}>
-            Solicitar Cita
+          <Button variant="secondary" onClick={handlePrevStep} className="me-2">Atrás</Button>
+          <Button variant="success" onClick={handleSubmit}>
+            <FaCheckCircle className="me-2" /> Confirmar Cita
           </Button>
-        </Form>
-      </Card>
+        </Card>
+      )}
     </Container>
   );
 };
 
 export default AppointmentForm;
+

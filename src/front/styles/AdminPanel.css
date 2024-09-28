@@ -1,0 +1,30 @@
+/* DateTable Custom Styling */
+.table-sm th, .table-sm td {
+    vertical-align: middle;
+    padding: 12px;
+}
+
+.table-sm tbody tr:hover {
+    background-color: #f1f9ff;
+    transition: background-color 0.3s ease;
+}
+
+.table-responsive {
+    max-height: 500px;
+    overflow-y: auto;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 14px;
+}
+
+.bg-primary {
+    background-color: #074173 !important;
+}
+
+.text-white {
+    color: #ffffff !important;
+}
