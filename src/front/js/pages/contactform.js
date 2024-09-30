@@ -1,6 +1,5 @@
-// src/front/js/pages/ContactForm.js
 import React, { useState } from 'react';
-import { Container, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Modal } from 'react-bootstrap';
 import '../../styles/home.css';
 
 export const ContactForm = () => {
@@ -12,6 +11,7 @@ export const ContactForm = () => {
 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   const googleMapsUrl = 'https://www.google.com/maps/place/Be+Casa+Essential+Torrent+Park/@39.4284114,-0.4709562,19.25z/data=!4m6!3m5!1s0xd60512a2b64ce6b:0x93882948ce1271f2!8m2!3d39.4284164!4d-0.4704952!16s%2Fg%2F11kjm5xh3y?entry=ttu&g_ep=EgoyMDI0MDkwNC4wIKXMDSoASAFQAw%3D%3D'
 
@@ -20,22 +20,38 @@ export const ContactForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Aquí puedes añadir la lógica para enviar los datos del formulario a tu backend
-    // Por ejemplo, usando fetch o axios
+    try {
+      const response = await fetch(`${process.env.BACKEND_URL}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Simulación de éxito
-    setAlertMessage('Tu mensaje ha sido enviado con éxito.');
-    setShowAlert(true);
+      if (response.ok) {
+        setAlertMessage('Tu mensaje ha sido enviado con éxito.');
+        setShowAlert(true);
+        setShowModal(true); // Mostrar el modal de éxito
 
-    // Limpiar el formulario
-    setFormData({
-      name: '',
-      email: '',
-      message: '',
-    });
+        // Limpiar el formulario
+        setFormData({
+          name: '',
+          email: '',
+          message: '',
+        });
+      } else {
+        setAlertMessage('Error al enviar el mensaje. Inténtelo de nuevo.');
+        setShowAlert(true);
+      }
+    } catch (error) {
+      console.error('Error al enviar el formulario:', error);
+      setAlertMessage('Ocurrió un error. Inténtelo de nuevo más tarde.');
+      setShowAlert(true);
+    }
   };
 
   return (
@@ -82,7 +98,7 @@ export const ContactForm = () => {
               required
             />
           </Form.Group>
-          <div className='d-flex flex-column justify-content-center align-items-center '>
+          <div className='d-flex flex-column justify-content-center align-items-center'>
             <Button variant="primary" type="submit" className="button-enviar mt-3 col-3">
               Enviar
             </Button>
@@ -93,18 +109,24 @@ export const ContactForm = () => {
               onClick={() => window.open(googleMapsUrl, '_blank')} >
               Ubicación de nuestra clínica
             </Button>
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1831.0010805200143!2d-0.37181847120525063!3d39.48368352468122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2ses!4v1727355064456!5m2!1ses!2ses"
-              width="1000"
-              height="400"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade">
-            </iframe>
           </div>
         </Form>
       </div>
+
+      {/* Modal de éxito */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Mensaje Enviado</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Tu mensaje ha sido enviado con éxito y pronto serás atendido por uno de nuestros asesores.</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="success" onClick={() => setShowModal(false)}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

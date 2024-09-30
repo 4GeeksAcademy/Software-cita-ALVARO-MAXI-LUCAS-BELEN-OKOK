@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 export const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const { login } = useContext(AuthContext);
+    const { login, user } = useContext(AuthContext);
     const navigate = useNavigate();
 
     // Estado para el modal de éxito
@@ -19,7 +19,11 @@ export const Login = () => {
         if (success) {
             setShowSuccessModal(true);  // Muestra el modal de éxito
             setTimeout(() => {
-                navigate("/dashboard");  // Redirige al login después de 3 segundos
+                if (user.role === "doctor") {
+                    navigate("/admin");  // Si el rol es "doctor", redirige al panel de admin
+                } else {
+                    navigate("/dashboard");  // Si es un usuario regular, redirige al dashboard
+                }
             }, 3000);
         } else {
             alert("Error en el login, por favor verifica tus credenciales.");
@@ -28,7 +32,7 @@ export const Login = () => {
 
     return (
         <div className="container-login d-flex justify-content-center align-items-center m-4 bg-white shadow-lg rounded ">
-            <div className="bg-white p-4 rounded-4 shadow" style={{ maxWidth: '600px', height: '350px'}}>
+            <div className="bg-white p-4 rounded-4 shadow" style={{ maxWidth: '600px', height: '350px' }}>
                 <h1 className="mb-4 text-center" style={{
                     fontSize: '28px',
                     fontWeight: 'bold',

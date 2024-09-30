@@ -47,13 +47,17 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Cargar el usuario desde localStorage cuando el componente se monta
+    // En el `useEffect` de `AuthContext`
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const storedToken = localStorage.getItem('token');
         if (storedUser && storedToken) {
-            setUser(JSON.parse(storedUser));
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            console.log(parsedUser); // Verifica que el rol esté presente
         }
     }, []);
+
 
     return (
         <AuthContext.Provider value={{ user, login, logout }}>

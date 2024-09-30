@@ -7,12 +7,16 @@ import DoctorTable from '../component/DoctorTable';
 import AvailabilityTable from '../component/AvailabilityTable';
 import Calendar from 'react-calendar'; // Importamos el calendario de React
 import 'react-calendar/dist/Calendar.css'; // Importamos los estilos del calendario
-import { Button, Modal, Form, Spinner, Alert, Card, Row, Col } from 'react-bootstrap';
+import { Button, Modal, Form, Spinner, Alert, Card, Row, Col, Table } from 'react-bootstrap';
 import { FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import AppointmentChart from '../component/AppointmentChart';
+import { AuthContext } from "../store/AuthContext"; // Importa tu contexto de autenticación
 
 
 export const AdminPanel = () => {
+  const { user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
+
   const { dates, addDate, updateDate, removeDate, loading: datesLoading, error: datesError } = useContext(DateContext);
   const { doctors, addDoctor, updateDoctor, removeDoctor, loading: doctorsLoading, error: doctorsError } = useContext(DoctorContext);
   const { availabilities, addAvailability, updateAvailability, removeAvailability, loading: availabilitiesLoading, error: availabilitiesError, getAvailabilityByDate } = useContext(AvailabilityContext);
@@ -45,12 +49,40 @@ export const AdminPanel = () => {
         });
         const data = await response.json();
         setUsers(data.user);  // Guardar la lista de usuarios en el estado
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     };
     fetchUsers();
   }, []);
+
+  const changeRoleToDoctor = async (userId) => {
+    try {
+      const response = await fetch(`${process.env.BACKEND_URL}/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ role: 'doctor' }),
+      });
+
+      if (response.ok) {
+        alert("El rol del usuario ha sido cambiado a 'doctor' con éxito.");
+        // Actualizar la lista de usuarios después del cambio
+        setUsers(users.map(user => (user.id === userId ? { ...user, role: 'doctor' } : user)));
+      } else {
+        alert("Hubo un error al cambiar el rol del usuario.");
+      }
+    } catch (error) {
+      console.error("Error changing user role:", error);
+    }
+  };
+
+  if (loading) {
+    return <Spinner animation="border" variant="primary" />;
+  }
 
   // Funciones para gestionar la apertura y cierre de modales
   const handleShowDateModal = (date = { speciality: '', doctor: '', datetime: '', reason_for_appointment: '', date_type: '', user_id: '' }) => {
@@ -238,6 +270,30 @@ export const AdminPanel = () => {
     }
   };
 
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      const response = await fetch(`${process.env.BACKEND_URL}/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (response.ok) {
+        alert(`Rol cambiado a ${newRole} exitosamente.`);
+        // Actualiza la lista de usuarios/doctores después de cambiar el rol
+        fetchUsers();
+      } else {
+        const data = await response.json();
+        alert(`Error al cambiar rol: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error al cambiar rol:', error);
+    }
+  };
+
 
 
 
@@ -248,6 +304,7 @@ export const AdminPanel = () => {
 
       <Row>
         {/* Gestión de Citas */}
+
 
         <Col md={4}>
           <section id="dates-section">
@@ -608,6 +665,58 @@ export const AdminPanel = () => {
           </Modal.Body>
         </Modal>
       </section>
+      <div>
+        <section id="users-section">
+          <Card className="shadow-sm mb-4">
+            <Card.Body>
+              <Card.Title className="text-center mb-4">Usuarios</Card.Title>
+              <Table striped bordered hover responsive className="mt-3">
+                <thead className="bg-primary text-white">
+                  <tr>
+                    <th className="text-center">ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th className="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="text-center">{user.id}</td>
+                      <td>{user.name}</td>
+                      <td>{user.email}</td>
+                      <td>{user.role}</td>
+                      <td className="text-center">
+                        {user.role === 'doctor' ? (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleChangeRole(user.id, 'user')}
+                          >
+                            Revert to User
+                          </Button>
+                        ) : (
+                          // Dentro de tu componente AdminPanel, en la tabla de usuarios o doctores
+                          <Button
+                            className='btn btn-primary'
+                            variant="btn btn-primary"
+                            onClick={() => handleRoleChange(user.id, 'user')} // Aquí llamas a la función para cambiar a "usuario"
+                          >
+                            Convertir a Usuario
+                          </Button>
+
+                        )}
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
+        </section>
+      </div>
 
       <div className="mb-5">
         <section id="statistics-section">

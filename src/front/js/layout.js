@@ -57,15 +57,18 @@ const Layout = () => {
                                             <Route element={<Signup />} path="/register" />
                                             <Route path="/dashboard" element={<UserDashboard />} />
                                             <Route
-                                                element={
-                                                    <DateProvider>
-                                                        <DoctorProvider>
-                                                            <AdminPanel />
-                                                        </DoctorProvider>
-                                                    </DateProvider>
-                                                }
                                                 path="/admin"
+                                                element={
+                                                    <ProtectRoute requiredRole="doctor">
+                                                        <DateProvider>
+                                                            <DoctorProvider>
+                                                                <AdminPanel />
+                                                            </DoctorProvider>
+                                                        </DateProvider>
+                                                    </ProtectRoute>
+                                                }
                                             />
+
                                             <Route element={<h1>Not found!</h1>} />
                                         </Routes>
                                         <Footer />
