@@ -22,6 +22,7 @@ flask-jwt-extended = "*"
 sendgrid = "*"
 resend = "*"
 python-dateutil = "*"
+click = "*"
 
 [requires]
 python_version = "3.10"

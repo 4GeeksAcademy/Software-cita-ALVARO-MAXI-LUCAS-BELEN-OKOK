@@ -110,7 +110,7 @@ def update_user(user_id):
     user.document_number = body.get('document_number', user.document_number)
     user.address = body.get('address', user.address)
     user.role = body.get('role', user.role)
-    user.speciality = body.get('speciality, user.speciality')
+    user.speciality = body.get('speciality', user.speciality)         #SE MODIFICÓ ERROR EN COMILLAS.
     user.email = body.get('email', user.email)
     user.password = body.get('password', user.password)
     user.phone = body.get('phone', user.phone)
