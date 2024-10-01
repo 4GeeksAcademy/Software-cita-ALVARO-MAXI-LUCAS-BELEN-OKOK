@@ -14,7 +14,7 @@ from sendgrid.helpers.mail import Mail
 import resend
 
 # Cargar variables de entorno
-load_dotenv()
+load_dotenv
 
 # Configurar API Key de Resend
 resend.api_key = os.getenv("RESEND_API_KEY")
