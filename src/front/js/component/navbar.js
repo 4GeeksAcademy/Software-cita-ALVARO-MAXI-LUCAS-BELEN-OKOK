@@ -8,6 +8,7 @@ import '../../styles/home.css';
 export const CustomNavbar = () => {
   const { user, logout } = useContext(AuthContext); // Access the user state and logout function
   const location = useLocation(); // Get the current path
+  
 
   return (
     <BootstrapNavbar variant="dark" expand="lg" className="shadow-sm py-3 sticky-top custom-navbar">
@@ -61,7 +62,7 @@ export const CustomNavbar = () => {
                 <Nav.Link href="/dashboard" className="mx-3">
                   <FaUserAlt className="mr-1" /> My Profile
                 </Nav.Link>
-                <Nav.Link onClick={logout} className="mx-3 me-auto">
+                <Nav.Link href="/login" onClick={logout} className="mx-3 me-auto">
                   <FaSignOutAlt className="mr-1" /> Logout
                 </Nav.Link>
               </>

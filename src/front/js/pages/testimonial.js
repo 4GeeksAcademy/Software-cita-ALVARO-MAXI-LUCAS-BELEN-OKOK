@@ -76,7 +76,7 @@ export const Testimonials = () => {
         <Row>
           {displayTestimonials.map((testimonial, index) => (
             <Col md={4} key={index} className="mb-3">
-              <Card>
+              <Card className='card-testimonios'>
                 <Card.Body>
                   <Card.Text>"{testimonial.text}"</Card.Text>
                   <Card.Subtitle className="mb-2 text-muted">{testimonial.author}</Card.Subtitle>

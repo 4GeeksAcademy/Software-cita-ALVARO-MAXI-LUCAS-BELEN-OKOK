@@ -2,6 +2,7 @@ import React from 'react';
 import { Container, Card, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
+
 export const Services = () => {
   return (
     <Container className="mt-4 text-center">
@@ -9,7 +10,7 @@ export const Services = () => {
         <h2>Nuestros Servicios</h2>
         <Row>
           <Col md={4}>
-            <Card>
+            <Card className='card-servicios-principal'>
               <Card.Body>
                 <Card.Title>Exámenes de Vista</Card.Title>
                 <Card.Text>
@@ -24,7 +25,7 @@ export const Services = () => {
             </Card>
           </Col>
           <Col md={4}>
-            <Card>
+            <Card className='card-servicios-principal'>
               <Card.Body>
                 <Card.Title>Cirugías</Card.Title>
                 <Card.Text>
@@ -39,7 +40,7 @@ export const Services = () => {
             </Card>
           </Col>
           <Col md={4}>
-            <Card>
+            <Card className='card-servicios-principal'>
               <Card.Body>
                 <Card.Title>Tratamientos</Card.Title>
                 <Card.Text>

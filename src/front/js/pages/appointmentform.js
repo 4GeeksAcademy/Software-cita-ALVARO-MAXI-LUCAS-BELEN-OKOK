@@ -147,7 +147,7 @@ export const AppointmentForm = () => {
       )}
 
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
-      {error && <Alert variant="danger">Error: {error.message}</Alert>}
+      {error && <Alert variant="danger">Error: Debes iniciar sesión primero.</Alert>}
 
       {/* Progress Bar */}
       <ProgressBar now={(step / 3) * 100} className="mb-4" label={`${step} / 3`} />
@@ -256,7 +256,7 @@ export const AppointmentForm = () => {
               )}
             </Col>
           </Row>
-          <Button variant="secondary" onClick={handlePrevStep} className="me-2">Atrás</Button>
+          <Button variant="secondary" onClick={handlePrevStep} className="mb-2">Atrás</Button>
           <Button variant="primary" onClick={handleNextStep} disabled={!appointment.datetime}>
             Siguiente
           </Button>
@@ -303,9 +303,9 @@ export const AppointmentForm = () => {
             </Col>
           </Row>
 
-          <Button variant="secondary" onClick={handlePrevStep} className="me-2">Atrás</Button>
-          <Button variant="success" onClick={handleSubmit}>
-            <FaCheckCircle className="me-2" /> Confirmar Cita
+          <Button variant="secondary" onClick={handlePrevStep} className="mt-2">Atrás</Button>
+          <Button variant="success" className="mt-2" onClick={handleSubmit}>
+            <FaCheckCircle  /> Confirmar Cita
           </Button>
         </Card>
       )}

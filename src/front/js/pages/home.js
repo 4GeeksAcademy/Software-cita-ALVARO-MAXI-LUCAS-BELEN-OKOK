@@ -92,7 +92,7 @@ export const Home = () => {
 
 				{/* Sección Destacada para Agendar Cita */}
 				{/* Sección Destacada para Agendar Cita */}
-				<section className="mt-5 p-5 bg-primary text-white shadow m-4 rounded animate__animated animate__fadeInUp" data-aos="fade-up">
+				<section className="section-citas mt-5 p-5 text-white shadow m-4 rounded animate__animated animate__fadeInUp" data-aos="fade-up">
 					<Container className="text-center">
 						<Row className="align-items-center">
 							<Col md={8}>
@@ -142,7 +142,7 @@ export const Home = () => {
 						<h2 className="text-center mb-4">Nuestros Servicios</h2>
 						<Row>
 							<Col md={4}>
-								<Card className="mb-3 text-center">
+								<Card className="card-servicios mb-3 text-center">
 									<Card.Body>
 										<FaEye size={50} className="mb-3 text-primary" />
 										<Card.Title>Exámenes de la Vista</Card.Title>
@@ -151,7 +151,7 @@ export const Home = () => {
 								</Card>
 							</Col>
 							<Col md={4}>
-								<Card className="mb-3 text-center">
+								<Card className="card-servicios mb-3 text-center">
 									<Card.Body>
 										<FaStethoscope size={50} className="mb-3 text-primary" />
 										<Card.Title>Tratamientos Especializados</Card.Title>
@@ -160,7 +160,7 @@ export const Home = () => {
 								</Card>
 							</Col>
 							<Col md={4}>
-								<Card className="mb-3 text-center">
+								<Card className="card-servicios mb-3 text-center">
 									<Card.Body>
 										<FaCalendarCheck size={50} className="mb-3 text-primary" />
 										<Card.Title>Agende su Cita</Card.Title>
@@ -178,8 +178,8 @@ export const Home = () => {
 						<h2 className="text-center">Noticias de la Clínica</h2>
 						<Row className="mt-4">
 							<Col md={4}>
-								<Card className="mb-3">
-									<Card.Img variant="top" src={appointmentImg} />
+								<Card className="card-noticias mb-3">
+									<Card.Img className="img-noticia" variant="top" src={appointmentImg} />
 									<Card.Body>
 										<Card.Title>Nuevo equipo de diagnóstico</Card.Title>
 										<Card.Text>Hemos adquirido un equipo de diagnóstico ocular de última generación.</Card.Text>
@@ -188,8 +188,8 @@ export const Home = () => {
 								</Card>
 							</Col>
 							<Col md={4}>
-								<Card className="mb-3">
-									<Card.Img variant="top" src={carouselImg2} />
+								<Card className="card-noticias mb-3">
+									<Card.Img className="img-noticia" variant="top" src={carouselImg2} />
 									<Card.Body>
 										<Card.Title>Campaña de prevención</Card.Title>
 										<Card.Text>Participa en nuestra campaña de prevención de enfermedades oculares.</Card.Text>
@@ -198,8 +198,8 @@ export const Home = () => {
 								</Card>
 							</Col>
 							<Col md={4}>
-								<Card className="mb-3">
-									<Card.Img variant="top" src={carouselImg3} />
+								<Card className="card-noticias mb-3">
+									<Card.Img  className="img-noticia" variant="top" src={carouselImg3} />
 									<Card.Body>
 										<Card.Title>Charlas informativas</Card.Title>
 										<Card.Text>Acompáñanos en nuestras charlas sobre el cuidado visual.</Card.Text>

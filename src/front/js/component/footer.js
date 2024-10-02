@@ -4,7 +4,7 @@ import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/f
 import '../../styles/home.css';
 
 export const Footer = () => (
-  <footer className="footer mt-auto py-4 text-center bg-dark text-white custom-footer">
+  <footer className="mt-auto py-4 text-center bg-dark text-white custom-footer">
     <Container>
 
       <div className="social-icons d-flex justify-content-center mb-3">

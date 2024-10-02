@@ -22,4 +22,29 @@ body {
   .button-enviar {
     background-color: #074173;
   }
+
+.section-citas {
+  background-color: #094b85;
+}
  
+
+.img-noticia {
+  object-fit: cover;
+  height: 250px;
+}
+
+.card-noticias {
+  min-height: 450px;
+}
+
+.card-servicios {
+  min-height: 220px;
+}
+
+.card-testimonios {
+  min-height: 200px;
+}
+
+.card-servicios-principal{
+  min-height: 290px;
+}

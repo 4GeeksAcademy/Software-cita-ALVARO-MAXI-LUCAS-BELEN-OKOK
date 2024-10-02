@@ -31,8 +31,8 @@ export const Login = () => {
     };
 
     return (
-        <div className="container-login d-flex justify-content-center align-items-center m-4 bg-white shadow-lg rounded ">
-            <div className="bg-white p-4 rounded-4 shadow" style={{ maxWidth: '600px', height: '350px' }}>
+        <div className="container-login d-flex justify-content-center mt-4">
+            <div className="bg-white p-4 rounded-4 shadow-lg d-flex flex-column justify-content-center" style={{ maxWidth: '700px', height: '400px' }}>
                 <h1 className="mb-4 text-center" style={{
                     fontSize: '28px',
                     fontWeight: 'bold',
