@@ -25,6 +25,9 @@ import { DateProvider } from "./store/DateContext";
 import { DoctorProvider } from "./store/DoctorContext";
 import { AvailabilityProvider } from "./store/AvailabilityContext";
 import UserDashboard from "./pages/UserDashboard";
+import ForgotPassword from "./pages/ForgotPassword";  // Importa ForgotPassword
+import ResetPassword from "./pages/ResetPassword";    // Importa ResetPassword
+
 
 
 
@@ -55,6 +58,8 @@ const Layout = () => {
                                             <Route element={<ContactForm />} path="/contact" />
                                             <Route element={<Login />} path="/login" />
                                             <Route element={<Signup />} path="/register" />
+                                            <Route element={<ForgotPassword />} path="/forgot-password" />
+                                            <Route element={<ResetPassword />} path="/reset-password/:token" />
                                             <Route path="/dashboard" element={<UserDashboard />} />
                                             <Route
                                                 path="/admin"

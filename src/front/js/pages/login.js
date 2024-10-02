@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";  // Importamos Link para el enlace de "Olvidé mi contraseña"
 import { AuthContext } from "../store/AuthContext";
-import { FaEnvelope, FaLock } from "react-icons/fa"; // Importa íconos de react-icons
+import { FaEnvelope, FaLock } from "react-icons/fa";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export const Login = () => {
@@ -10,19 +10,18 @@ export const Login = () => {
     const { login, user } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    // Estado para el modal de éxito
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const success = await login(email, password);
         if (success) {
-            setShowSuccessModal(true);  // Muestra el modal de éxito
+            setShowSuccessModal(true);
             setTimeout(() => {
                 if (user.role === "doctor") {
-                    navigate("/admin");  // Si el rol es "doctor", redirige al panel de admin
+                    navigate("/admin");
                 } else {
-                    navigate("/dashboard");  // Si es un usuario regular, redirige al dashboard
+                    navigate("/dashboard");
                 }
             }, 3000);
         } else {
@@ -36,7 +35,7 @@ export const Login = () => {
                 <h1 className="mb-4 text-center" style={{
                     fontSize: '28px',
                     fontWeight: 'bold',
-                    color: '#074173', // Color del título
+                    color: '#074173',
                     textShadow: '1px 1px 2px #1679AB'
                 }}>Bienvenido a Clínica Oftalmológica</h1>
                 <form onSubmit={handleSubmit}>
@@ -81,17 +80,22 @@ export const Login = () => {
                             fontSize: '16px',
                             padding: '10px',
                             borderRadius: '30px',
-                            transition: '0.3s',
                             background: 'linear-gradient(135deg, #074173 0%, #1679AB 100%)',
                             color: 'white',
                             border: 'none',
                         }}
-                        onMouseOver={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #1679AB 0%, #074173 100%)'}
-                        onMouseOut={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #074173 0%, #1679AB 100%)'}
                     >Iniciar Sesión</button>
                 </form>
+
+                {/* Enlace para recuperar contraseña */}
+                <div className="text-center mt-3">
+                    <Link to="/forgot-password" style={{ color: '#1679AB' }}>
+                        ¿Olvidaste tu contraseña?
+                    </Link>
+                </div>
             </div>
 
+            {/* Modal de éxito */}
             {showSuccessModal && (
                 <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1050 }}>
                     <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true" style={{ backgroundColor: '#C5FF95' }}>

@@ -4,16 +4,17 @@ import { FaHome, FaUserAlt, FaCalendarAlt, FaEnvelope, FaSignInAlt, FaUserPlus, 
 import { AuthContext } from "../store/AuthContext"; // Make sure you have this context to manage user authentication
 import { useLocation } from 'react-router-dom'; // Import useLocation to detect the current path
 import '../../styles/home.css';
+import logo from '../../img/logo.png'; // Import the logo image
 
 export const CustomNavbar = () => {
   const { user, logout } = useContext(AuthContext); // Access the user state and logout function
   const location = useLocation(); // Get the current path
-  
 
   return (
     <BootstrapNavbar variant="dark" expand="lg" className="shadow-sm py-3 sticky-top custom-navbar">
       <Container>
-        <BootstrapNavbar.Brand href="/" className="font-weight-bold text-uppercase">
+        <BootstrapNavbar.Brand href="/" className="font-weight-bold text-uppercase d-flex align-items-center">
+          <img src={logo} alt="Logo" width="90" height="70" className="mr-2" />
           Oftalmología
         </BootstrapNavbar.Brand>
         <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />

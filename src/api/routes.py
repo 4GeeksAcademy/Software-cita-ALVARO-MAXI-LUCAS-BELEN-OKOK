@@ -65,6 +65,7 @@ def create_user():
 
     try:
         sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))  # Utiliza tu API Key de SendGrid
+        sg = SendGridAPIClient(os.getenv('SENDGRID_API_KEY2'))  # Utiliza tu API Key de SendGrid
         response = sg.send(message)
         print(f"Email sent successfully: {response.status_code}")
     except Exception as e:
@@ -616,3 +617,69 @@ def send_email(name, email, message):
     print(response.status_code)
     print(response.body)
     print(response.headers)
+
+
+
+
+
+@api.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"error": "Correo electrónico es obligatorio"}), 400
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    # Generar token de restablecimiento (puedes usar el id del usuario)
+    reset_token = create_access_token(identity=user.id)
+
+    # Enviar el correo electrónico de restablecimiento
+    try:
+        sendgrid_api_key = os.getenv('SENDGRID_API_KEY2')
+        sender_email = os.getenv("SENDGRID_VERIFIED_EMAIL", "luck_caneo@hotmail.com")
+        reset_url = f"{os.getenv('FRONTEND_URL')}/reset-password?token={reset_token}"
+
+        message = Mail(
+            from_email=sender_email,
+            to_emails=email,
+            subject="Restablecimiento de Contraseña",
+            html_content=f"Para restablecer tu contraseña, haz clic en el siguiente enlace: <a href='{reset_url}'>Restablecer Contraseña</a>"
+        )
+
+        sg = SendGridAPIClient(sendgrid_api_key)
+        sg.send(message)
+        
+        return jsonify({"message": "Correo de restablecimiento enviado"}), 200
+    except Exception as e:
+        print(f"Error al enviar el correo: {e}")
+        return jsonify({"error": "Error al enviar el correo"}), 500
+
+
+
+@api.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    token = data.get('token')
+    new_password = data.get('password')
+
+    try:
+        # Decodificar el token para obtener el user_id
+        user_id = user(token)['sub']
+        user = User.query.get(user_id)
+
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        # Actualizar la contraseña
+        user.set_password(new_password)
+        db.session.commit()
+
+        return jsonify({"message": "Contraseña actualizada exitosamente"}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Token inválido o expirado"}), 400
