@@ -290,8 +290,7 @@ def update_date(date_id):
     if not date:
         return jsonify({"message": "Date not found"}), 404
     
-    date.speciality = body.get('speciality', date.speciality)
-    date.doctor = body.get('doctor', date.doctor)
+    date.doctor_id = body.get('doctor_id', date.doctor_id)
     date.datetime = body.get('datetime', date.datetime)
     date.reason_for_appointment = body.get('reason_for_appointment', date.reason_for_appointment)
     date.date_type = body.get('date_type', date.date_type)
@@ -300,6 +299,7 @@ def update_date(date_id):
     db.session.commit()
     
     return jsonify({"message": "Date updated successfully", "date": date.serialize()}), 200
+
 
 
 @api.route('/dates/<int:date_id>', methods=['DELETE'])

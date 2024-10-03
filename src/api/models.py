@@ -45,21 +45,29 @@ class User(db.Model):
 class Date(db.Model):
     __tablename__ = 'dates'
     id = db.Column(db.Integer, primary_key=True)
-    doctor = db.Column(db.String(100), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Referencia al ID del doctor
     datetime = db.Column(db.DateTime, nullable=False)  
     reason_for_appointment = db.Column(db.String(300), nullable=False)
     date_type = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Referencia al ID del usuario (paciente)
+
+    doctor = db.relationship('User', foreign_keys=[doctor_id], backref='appointments')  # Relación con el modelo User (doctor)
 
     def serialize(self):
         return {
             "id": self.id,
-            "doctor": self.doctor,
+            "doctor": {
+                "id": self.doctor.id,
+                "name": self.doctor.name,
+                "last_name": self.doctor.last_name,
+                "speciality": self.doctor.speciality
+            },
             "datetime": self.datetime.isoformat(),
             "reason_for_appointment": self.reason_for_appointment,
             "date_type": self.date_type,
             "user_id": self.user_id
         }
+
 
 class WeeklyAvailability(db.Model):
     __tablename__ = 'weekly_availability'

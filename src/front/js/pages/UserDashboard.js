@@ -13,6 +13,8 @@ const UserDashboard = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [notifications, setNotifications] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+
 
     useEffect(() => {
         if (user) {
@@ -97,10 +99,29 @@ const UserDashboard = () => {
     };
 
     // Handle edit modal open
-    const handleEdit = (appointment) => {
+    const handleEdit = async (appointment) => {
         setSelectedAppointment({ ...appointment });
         setShowEditModal(true);
+
+        try {
+            const response = await fetch(`${process.env.BACKEND_URL}/doctors`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setDoctors(data); // Guardamos la lista de doctores en el estado
+            } else {
+                alert('Error al cargar los doctores');
+            }
+        } catch (error) {
+            console.error('Error al obtener doctores:', error);
+        }
     };
+
 
     // Handle save changes
     const handleSaveChanges = async () => {
@@ -111,7 +132,11 @@ const UserDashboard = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
-                body: JSON.stringify(selectedAppointment),
+                body: JSON.stringify({
+                    doctor_id: selectedAppointment.doctor, // Asegúrate de enviar el ID del doctor
+                    datetime: selectedAppointment.datetime,
+                    reason_for_appointment: selectedAppointment.reason_for_appointment,
+                }),
             });
 
             if (response.ok) {
@@ -126,11 +151,35 @@ const UserDashboard = () => {
         }
     };
 
+
     // Handle input changes in the edit modal
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSelectedAppointment({ ...selectedAppointment, [name]: value });
     };
+
+    const handleDelete = async (appointmentId) => {
+        if (window.confirm("¿Estás seguro de que deseas eliminar esta cita?")) {
+            try {
+                const response = await fetch(`${process.env.BACKEND_URL}/dates/${appointmentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (response.ok) {
+                    alert('Cita eliminada con éxito');
+                    setAppointments(appointments.filter(appointment => appointment.id !== appointmentId));
+                } else {
+                    alert('Error al eliminar la cita');
+                }
+            } catch (error) {
+                console.error('Error al eliminar la cita:', error);
+            }
+        }
+    };
+
 
     return (
         <Container className="mt-5">
@@ -184,11 +233,18 @@ const UserDashboard = () => {
                                             appointments.map(appointment => (
                                                 <tr key={appointment.id}>
                                                     <td>{new Date(appointment.datetime).toLocaleDateString()}</td>
-                                                    <td>{appointment.doctor_name || 'Desconocido'}</td> {/* Usa appointment.doctor_name */}
+                                                    <td>{appointment.doctor.name}</td>
                                                     <td>{appointment.reason_for_appointment}</td>
                                                     <td>{appointment.status || 'Pendiente'}</td>
                                                     <td>
                                                         <Button variant="warning" size="sm" onClick={() => handleEdit(appointment)}>Editar</Button>
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
+                                                            className="ms-2"
+                                                            onClick={() => handleDelete(appointment.id)}>
+                                                            Eliminar
+                                                        </Button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -227,12 +283,20 @@ const UserDashboard = () => {
                         <Form.Group className="mb-3">
                             <Form.Label>Doctor</Form.Label>
                             <Form.Control
-                                type="text"
+                                as="select"
                                 name="doctor"
-                                value={selectedAppointment?.doctor_name || ''}
+                                value={selectedAppointment?.doctor || ''}
                                 onChange={handleInputChange}
-                            />
+                            >
+                                <option value="">Selecciona un doctor</option>
+                                {doctors.map(doctor => (
+                                    <option key={doctor.id} value={doctor.id}>
+                                        {doctor.name} {doctor.last_name}
+                                    </option>
+                                ))}
+                            </Form.Control>
                         </Form.Group>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Fecha y Hora</Form.Label>
                             <Form.Control

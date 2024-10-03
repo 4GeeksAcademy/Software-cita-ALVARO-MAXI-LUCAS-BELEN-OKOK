@@ -24,7 +24,7 @@ const DateTable = ({ dates, handleShowModal, removeDate }) => {
                             <tr key={date.id} className="text-center align-middle">
                                 <td>{date.id}</td>
                                 <td>{date.speciality || "N/A"}</td>
-                                <td>{date.doctor || "Unknown"}</td>
+                                <td>{date.doctor.name || "Unknown"}</td>
                                 <td>{new Date(date.datetime).toLocaleString()}</td>
                                 <td>{date.reason_for_appointment}</td>
                                 <td>{date.date_type}</td>
