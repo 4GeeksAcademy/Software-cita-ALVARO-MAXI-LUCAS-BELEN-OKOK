@@ -98,17 +98,16 @@ export const Login = () => {
             {/* Modal de éxito */}
             {showSuccessModal && (
                 <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1050 }}>
-                    <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true" style={{ backgroundColor: '#C5FF95' }}>
-                        <div className="toast-header" style={{ backgroundColor: '#5DEBD7', color: '#074173' }}>
-                            <strong className="me-auto">¡Bienvenido a Oftalmología Ventilador!</strong>
+                    <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div className="toast-header">
+                            <strong className="me-auto">¡Bienvenido a Clínica Oftalmológica!</strong>
                         </div>
                         <div className="toast-body" style={{ color: '#074173' }}>
                             <p>Serás redirigido a tu Panel de Usuario en breve...</p>
                             <div className="progress mt-2" style={{ height: '5px' }}>
                                 <div
-                                    className="progress-bar progress-bar-striped"
-                                    role="progressbar"
-                                    style={{ backgroundColor: '#1679AB', width: '100%', transition: 'width 3s linear' }}>
+                                    className="modal-login progress-bar progress-bar-striped"
+                                    role="progressbar">
                                 </div>
                             </div>
                         </div>
