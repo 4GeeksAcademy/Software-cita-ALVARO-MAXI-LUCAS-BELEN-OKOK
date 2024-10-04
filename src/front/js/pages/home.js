@@ -183,7 +183,7 @@ export const Home = () => {
 									<Card.Body>
 										<Card.Title>Nuevo equipo de diagnóstico</Card.Title>
 										<Card.Text>Hemos adquirido un equipo de diagnóstico ocular de última generación.</Card.Text>
-										<Button variant="primary">Leer más</Button>
+										
 									</Card.Body>
 								</Card>
 							</Col>
@@ -193,7 +193,7 @@ export const Home = () => {
 									<Card.Body>
 										<Card.Title>Campaña de prevención</Card.Title>
 										<Card.Text>Participa en nuestra campaña de prevención de enfermedades oculares.</Card.Text>
-										<Button variant="primary">Leer más</Button>
+										
 									</Card.Body>
 								</Card>
 							</Col>
@@ -203,7 +203,7 @@ export const Home = () => {
 									<Card.Body>
 										<Card.Title>Charlas informativas</Card.Title>
 										<Card.Text>Acompáñanos en nuestras charlas sobre el cuidado visual.</Card.Text>
-										<Button variant="primary">Leer más</Button>
+										
 									</Card.Body>
 								</Card>
 							</Col>
