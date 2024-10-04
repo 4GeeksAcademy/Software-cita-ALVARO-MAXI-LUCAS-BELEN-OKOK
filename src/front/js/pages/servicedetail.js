@@ -32,7 +32,7 @@ export const ServiceDetail = () => {
   return (
     <Container className="mt-4">
       <Card className="text-center">
-        <Card.Body>
+        <Card.Body className='d-flex justify-content-center flex-column'>
           <Card.Title>Detalles del Servicio</Card.Title>
           <Card.Text>
             {service ? (
@@ -41,7 +41,7 @@ export const ServiceDetail = () => {
                 <img 
                   src={service.image.url} 
                   alt={service.image.description} 
-                  style={{ width: '500px', height: 'auto' }} 
+                  style={{ width: '500px', height: 'auto', borderRadius: "5px" }} 
                 />
                 <div>{service.image.description}</div>
               </>

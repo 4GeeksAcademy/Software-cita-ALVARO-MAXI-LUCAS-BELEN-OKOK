@@ -52,3 +52,12 @@ body {
 .modal-login {
   background-color: #094b85 !important;
 }
+
+.card-text {
+  max-width: 500px;
+  align-self: center;
+}
+
+.service-detail {
+  display: flex;
+}

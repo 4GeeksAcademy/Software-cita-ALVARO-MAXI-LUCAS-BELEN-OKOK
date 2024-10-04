@@ -127,7 +127,6 @@ export const Home = () => {
 							<Col md={6}>
 								<h2 data-aos="fade-right">Sobre Nosotros</h2>
 								<p data-aos="fade-right">Somos una clínica oftalmológica con más de 20 años de experiencia brindando servicios de alta calidad para el cuidado de tu salud visual. Contamos con un equipo de especialistas dedicados y tecnología de última generación para asegurar diagnósticos precisos y tratamientos efectivos.</p>
-								<Button variant="primary" data-aos="zoom-in">Más información</Button>
 							</Col>
 							<Col md={6}>
 								<img src={appointmentImg} alt="Sobre Nosotros" className="img-fluid rounded" data-aos="fade-left" />
