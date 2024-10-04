@@ -44,7 +44,7 @@ export const Services = () => {
               <Card.Body>
                 <Card.Title>Tratamientos</Card.Title>
                 <Card.Text>
-                  Disponemos de tratamientos avanzados para diversas enfermedades oculares.
+                  Disponemos de tratamientos avanzados para diversas enfermedades oculares. 
                 </Card.Text>
                 <Link to="/services/3">
                   <Button variant="primary">Más Información</Button>

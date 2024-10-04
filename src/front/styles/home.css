@@ -48,3 +48,7 @@ body {
 .card-servicios-principal{
   min-height: 290px;
 }
+
+.modal-login {
+  background-color: #094b85 !important;
+}
