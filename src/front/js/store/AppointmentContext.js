@@ -12,7 +12,7 @@ export const AppointmentProvider = ({ children }) => {
 
     const appointment = async (speciality, doctor, datetime, reason_for_appointment, date_type) => {
         try {
-            const response =  await fetch(process.env.BACKEND_URL + '/dates', {
+            const response = await fetch(process.env.BACKEND_URL + '/dates', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const AppointmentProvider = ({ children }) => {
         }
     };
 
-   
+
     // Cargar citas desde localStorage al montar el componente
     useEffect(() => {
         const storedAppointments = localStorage.getItem('appointments');
@@ -56,7 +56,7 @@ export const AppointmentProvider = ({ children }) => {
     }, [appointments]);
 
 
-    
+
 
     const getToken = () => localStorage.getItem('token'); // Extract token retrieval logic
 
@@ -82,20 +82,38 @@ export const AppointmentProvider = ({ children }) => {
 
     const addAppointment = async (appointment) => {
         setLoading(true);
+
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+
+        // Solo incluir el token si existe
         const token = getToken();
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Verifica si el usuario está autenticado o no, y ajusta el `user_id` si es necesario
+        const formattedAppointment = {
+            ...appointment,
+            user_id: appointment.user_id ? appointment.user_id : null,  // Si no hay user_id, envía null
+        };
+
         try {
             const response = await fetch(`${process.env.BACKEND_URL}/dates`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(appointment),
+                headers: headers,
+                body: JSON.stringify(formattedAppointment),
             });
             const data = await response.json();
-            setAppointments([...appointments, data]);
+
+            if (response.ok) {
+                setAppointments([...appointments, data]);
+            } else {
+                console.error('Error adding appointment:', data.message);
+            }
         } catch (error) {
-            setError(error);
+            console.error('Error adding appointment:', error.message);
         } finally {
             setLoading(false);
         }
@@ -138,33 +156,24 @@ export const AppointmentProvider = ({ children }) => {
             setLoading(false);
         }
     };
-
     const getDoctors = async () => {
         setLoading(true);
-        const token = getToken();
         try {
-            const response = await fetch(`${process.env.BACKEND_URL}/doctors`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
+            const response = await fetch(`${process.env.BACKEND_URL}/doctors`);
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                const errorData = await response.json();
+                console.log("Error al obtener doctores:", errorData);
+                throw new Error(`Error: ${response.status}`);
             }
-
             const data = await response.json();
             setDoctors(data);
-            console.log(data);
         } catch (error) {
-            setError(error);
+            console.error('Error fetching doctors:', error);
         } finally {
             setLoading(false);
         }
     };
-    
+
     const addDoctor = async (doctor) => {
         setLoading(true);
         const token = getToken();

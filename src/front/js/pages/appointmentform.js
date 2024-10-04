@@ -12,7 +12,7 @@ export const AppointmentForm = () => {
   const { addAppointment, loading, error, doctors, getDoctors } = useContext(AppointmentContext);
   const { getAvailabilityByDate } = useContext(AvailabilityContext);
   const { user } = useContext(AuthContext);
-  const userId = user ? user.id : null;
+  const userId = user ? user.id : null; // Si no hay usuario, será null
 
   const [appointment, setAppointment] = useState({
     name: user ? user.name : '',
@@ -22,10 +22,11 @@ export const AppointmentForm = () => {
     datetime: '',
     type: 'in-person',
     speciality: '',
-    reason_for_appointment: '',
-    date_type: '',
-    user_id: userId,
+    "reason_for_appointment": "Consulta general",  // Motivo válido
+    date_type: 'Consulta',
+    user_id: userId,  // Asigna el user_id aquí, será null si no está autenticado
   });
+
 
   const [successMessage, setSuccessMessage] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -103,7 +104,7 @@ export const AppointmentForm = () => {
       const formattedAppointment = {
         ...appointment,
         datetime: combinedDateTime.toISOString(),
-        user_id: userId,
+        user_id: userId || null  // Aquí asignamos el user_id si existe
       };
 
       try {
@@ -118,6 +119,9 @@ export const AppointmentForm = () => {
       console.error('Fecha y hora son necesarias');
     }
   };
+
+
+
 
   const resetForm = () => {
     setAppointment({
@@ -147,7 +151,15 @@ export const AppointmentForm = () => {
       )}
 
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
-      {error && <Alert variant="danger">Error: Debes iniciar sesión primero.</Alert>}
+      {error && (
+        <Alert variant="danger">
+          {typeof error === 'string' && error.includes('iniciar sesión')
+            ? 'Debes iniciar sesión para crear la cita'
+            : 'Hubo un problema al crear la cita. Intenta nuevamente.'}
+        </Alert>
+      )}
+
+
 
       {/* Progress Bar */}
       <ProgressBar now={(step / 3) * 100} className="mb-4" label={`${step} / 3`} />
@@ -210,7 +222,7 @@ export const AppointmentForm = () => {
       )}
 
       {/* Step 2: Select Date and Time */}
-    
+
       {step === 2 && (
         <Card className="p-3 shadow">
           <h4><FaCalendarAlt className="me-2" /> Seleccionar Fecha y Hora</h4>
@@ -265,15 +277,45 @@ export const AppointmentForm = () => {
 
 
       {/* Step 3: Confirm Appointment */}
+      {/* Step 3: Confirm Appointment */}
+      {/* Step 3: Confirm Appointment */}
       {step === 3 && (
         <Card className="p-3 shadow">
           <h4><FaCheckCircle className="me-2" /> Confirmar Cita</h4>
           <Row className="mb-3">
             <Col md={6}>
-              <p><strong><FaUser className="me-2" /> Nombre:</strong> {appointment.name}</p>
+              {user ? (
+                <p><strong><FaUser className="me-2" /> Nombre:</strong> {appointment.name}</p>
+              ) : (
+                <Form.Group controlId="formName" className="mb-3">
+                  <Form.Label><FaUser className="me-2" /> Nombre</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={appointment.name}
+                    onChange={handleChange}
+                    placeholder="Ingrese su nombre"
+                    required
+                  />
+                </Form.Group>
+              )}
             </Col>
             <Col md={6}>
-              <p><strong><FaEnvelope className="me-2" /> Email:</strong> {appointment.email}</p>
+              {user ? (
+                <p><strong><FaEnvelope className="me-2" /> Email:</strong> {appointment.email}</p>
+              ) : (
+                <Form.Group controlId="formEmail" className="mb-3">
+                  <Form.Label><FaEnvelope className="me-2" /> Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={appointment.email}
+                    onChange={handleChange}
+                    placeholder="Ingrese su correo"
+                    required
+                  />
+                </Form.Group>
+              )}
             </Col>
           </Row>
           <Row className="mb-3">
@@ -292,23 +334,53 @@ export const AppointmentForm = () => {
               <p><strong><FaClock className="me-2" /> Horario:</strong> {appointment.datetime}</p>
             </Col>
           </Row>
+
+          {/* Añadir el campo para ingresar el motivo de la cita */}
           <Row className="mb-3">
-            <Col md={6}>
-              <p><strong><FaClipboardList className="me-2" /> Tipo de Cita:</strong>
-                {appointment.type === 'in-person' ? 'Presencial' : appointment.type === 'video' ? 'Videollamada' : 'Llamada'}
-              </p>
+            <Col md={12}>
+              <Form.Group controlId="formReason" className="mb-3">
+                <Form.Label><FaClipboardList className="me-2" /> Motivo de la Cita</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="reason_for_appointment"
+                  value={appointment.reason_for_appointment}
+                  onChange={handleChange}
+                  placeholder="Describa el motivo de su cita"
+                  rows={3}
+                  required
+                />
+              </Form.Group>
             </Col>
-            <Col md={6}>
-              <p><strong><FaFileMedical className="me-2" /> Razón de la Cita:</strong> {appointment.reason_for_appointment}</p>
+          </Row>
+
+          {/* Añadir selección para el tipo de cita */}
+          <Row className="mb-3">
+            <Col md={12}>
+              <Form.Group controlId="formDateType" className="mb-3">
+                <Form.Label><FaFileMedical className="me-2" /> Tipo de Cita</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="date_type"
+                  value={appointment.date_type}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccione el tipo de cita</option>
+                  <option value="Presencial">Presencial</option>
+                  <option value="Videollamada">Videollamada</option>
+                  <option value="Llamada">Llamada</option>
+                </Form.Control>
+              </Form.Group>
             </Col>
           </Row>
 
           <Button variant="secondary" onClick={handlePrevStep} className="mt-2">Atrás</Button>
           <Button variant="success" className="mt-2" onClick={handleSubmit}>
-            <FaCheckCircle  /> Confirmar Cita
+            <FaCheckCircle /> Confirmar Cita
           </Button>
         </Card>
       )}
+
     </Container>
   );
 };

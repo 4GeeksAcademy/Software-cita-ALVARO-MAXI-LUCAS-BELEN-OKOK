@@ -71,7 +71,7 @@ export const DoctorAppointments = () => {
                 </tbody>
             </Table>
 
-            {/* Modal for Adding/Editing Doctor */}
+            {/* Modal Para editar doctor  */}
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>{editMode ? 'Edit Doctor' : 'Add Doctor'}</Modal.Title>

@@ -8,7 +8,7 @@ const AppointmentChart = () => {
     const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
-        // Fetch data from your backend
+
         const fetchData = async () => {
             try {
                 const response = await fetch(`${process.env.BACKEND_URL}/api/statistics`, {
@@ -24,7 +24,7 @@ const AppointmentChart = () => {
         };
 
         const prepareChartData = (data) => {
-            // Assuming data comes as [{ month: 'January', appointments: 30 }, ...]
+
             const labels = data.map(item => item.month);
             const appointmentsData = data.map(item => item.appointments);
 

@@ -30,7 +30,7 @@ const DateTable = ({ dates, handleShowModal, removeDate }) => {
                                 <td>{date.date_type}</td>
                                 <td>{date.user_id}</td>
                                 <td>
-                                    {/* Action Buttons with Tooltips */}
+                                    
                                     <OverlayTrigger
                                         placement="top"
                                         overlay={<Tooltip id={`tooltip-edit-${date.id}`}>Edit</Tooltip>}

@@ -19,11 +19,16 @@ const AvailabilityProvider = ({ children }) => {
             // Asegurarse de que la fecha esté en formato 'YYYY-MM-DD'
             const formattedDate = selectedDate.toISOString().split('T')[0];  // Formato YYYY-MM-DD
 
+            const token = localStorage.getItem('token');  // Obtener el token si existe
+            const headers = { 'Content-Type': 'application/json' };
+
+            // Solo incluir el encabezado de autorización si el usuario está autenticado
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${process.env.BACKEND_URL}/doctor/${doctorId}/availability-by-date?date=${formattedDate}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+                headers
             });
 
             if (!response.ok) {
@@ -37,9 +42,6 @@ const AvailabilityProvider = ({ children }) => {
             return [];
         }
     };
-
-
-
 
     // Obtener todas las disponibilidades de todos los doctores
     useEffect(() => {

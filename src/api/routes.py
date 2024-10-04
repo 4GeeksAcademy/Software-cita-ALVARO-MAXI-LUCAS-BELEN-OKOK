@@ -4,13 +4,12 @@ from api.models import db, User, Date, WeeklyAvailability
 from api.utils import APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+
 import os
 from dotenv import load_dotenv
 from sqlalchemy.exc import SQLAlchemyError
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-
-
 import resend
 
 # Cargar variables de entorno
@@ -184,7 +183,7 @@ def send_appointment_email(appointment):
 
     # Obtener la información del usuario y del doctor
     user = User.query.get(appointment.user_id)
-    doctor = User.query.get(int(appointment.doctor))
+    doctor = User.query.get(int(appointment.doctor_id))  # Convertir doctor_id correctamente en entero
 
     if not user or not doctor:
         print("User or Doctor information is missing")
@@ -221,15 +220,33 @@ def send_appointment_email(appointment):
     except Exception as e:
         print(f"Error al enviar el correo con SendGrid: {e}")
 
-
-
 @api.route('/dates', methods=['POST'])
-@jwt_required()
+@jwt_required(optional=True)  # JWT opcional
 def create_date():
     body = request.get_json()
 
+    # Si el usuario está autenticado, extraer su identidad (si no, dejarlo como None)
+    current_user = get_jwt_identity()
+
+    # Si no hay usuario autenticado y no se ha proporcionado un user_id en la solicitud, dejar el user_id como None
+    user_id = current_user if current_user else body.get('user_id', None)
+
+    # Validar que el doctor existe antes de continuar
+    doctor = User.query.get(body['doctor_id'])
+    if not doctor:
+        return jsonify({"message": "Doctor not found"}), 404
+
+    # Validar que el motivo de la cita y el tipo de cita no estén vacíos
+    reason_for_appointment = body.get('reason_for_appointment', '').strip()
+    date_type = body.get('date_type', '').strip()
+
+    if not reason_for_appointment:
+        return jsonify({"message": "El motivo de la cita es obligatorio"}), 400
+    if not date_type:
+        return jsonify({"message": "El tipo de cita es obligatorio"}), 400
+
+    # Convertir la fecha y hora a formato datetime esperado
     try:
-        # Convertir la fecha y hora a formato datetime esperado
         appointment_datetime = datetime.strptime(body['datetime'], "%Y-%m-%dT%H:%M:%S.%fZ")
     except ValueError:
         try:
@@ -237,6 +254,7 @@ def create_date():
         except ValueError:
             return jsonify({"message": "Formato de fecha/hora inválido"}), 400
 
+    # Validar la disponibilidad del doctor en el día de la semana
     day_of_week = appointment_datetime.weekday()
     weekly_availability = WeeklyAvailability.query.filter_by(
         doctor_id=body['doctor_id'],
@@ -249,32 +267,39 @@ def create_date():
     if not (weekly_availability.start_time <= appointment_datetime.time() <= weekly_availability.end_time):
         return jsonify({"message": "La hora seleccionada no está disponible"}), 400
 
+    # Verificar si ya existe una cita en esa hora
     existing_appointment = Date.query.filter_by(
-        doctor=body['doctor_id'],
+        doctor_id=body['doctor_id'],
         datetime=appointment_datetime
     ).first()
 
     if existing_appointment:
         return jsonify({"message": "Esta hora ya está reservada para otra cita"}), 400
 
+    # Crear nueva cita
     new_date = Date(
-        doctor=body['doctor_id'],
+        doctor=doctor,  # Pasamos la instancia del doctor
         datetime=appointment_datetime,
-        reason_for_appointment=body['reason_for_appointment'],
-        date_type=body['date_type'],
-        user_id=body['user_id'],
+        reason_for_appointment=reason_for_appointment,
+        date_type=date_type,
+        user_id=user_id  # Usar el ID del usuario autenticado o el proporcionado
     )
 
     db.session.add(new_date)
     db.session.commit()
 
+    # Enviar correo si es necesario
     try:
-        send_appointment_email(new_date)  # Llama a la función para enviar el correo de confirmación
+        send_appointment_email(new_date)
     except Exception as e:
         print(f"Error sending appointment email: {e}")
         return jsonify({"message": "Cita creada, pero hubo un error al enviar el correo"}), 500
 
     return jsonify({"message": "Cita creada exitosamente", "date": new_date.serialize()}), 201
+
+
+
+
 
 
 
@@ -403,11 +428,12 @@ def update_doctor(doctor_id):
     return jsonify({"message": "Doctor updated successfully", "doctor": doctor.serialize()}), 200
 #Obtener doctor
 @api.route('/doctors', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)  # Usa JWT opcional para permitir acceso anónimo si es necesario
 def get_doctors():
-    doctors = User.query.filter_by(role='doctor').all()  # Asumiendo que el rol de doctor es 'doctor'
-    doctors_serialize = [doctor.serialize() for doctor in doctors]
-    return jsonify(doctors_serialize), 200
+    doctors = User.query.filter_by(role='doctor').all()
+    if not doctors:
+        return jsonify({"message": "No doctors found"}), 404
+    return jsonify([doctor.serialize() for doctor in doctors]), 200
 
 
 @api.route('/doctor/<int:doctor_id>/availability', methods=['GET'])
@@ -467,34 +493,23 @@ def create_weekly_availability(doctor_id):
 
 
 @api.route('/doctor/<int:doctor_id>/availability-by-date', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_availability_by_date(doctor_id):
-    """
-    Obtener la disponibilidad de un doctor para una fecha específica.
-    """
     date_str = request.args.get('date')
-    print(f"Doctor ID: {doctor_id}, Date: {date_str}")  # Verificar la entrada
+
+    # Verificar si el parámetro de fecha está presente
+    if not date_str:
+        return jsonify({"error": "Fecha no proporcionada"}), 400
 
     try:
+        # Intentar convertir la fecha
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        print(f"Parsed Date: {target_date}")  # Confirmar que la fecha es correcta
     except ValueError:
-        return jsonify({"error": "Invalid date format, use 'YYYY-MM-DD'"}), 400
+        return jsonify({"error": "Formato de fecha inválido, use 'YYYY-MM-DD'"}), 400
 
-    day_of_week = target_date.weekday()  # 0 = lunes, 6 = domingo
-    print(f"Day of Week: {day_of_week}")  # Verificar el día de la semana
-
+    # Continuar con la lógica de disponibilidad
+    day_of_week = target_date.weekday()  
     availabilities = WeeklyAvailability.query.filter_by(doctor_id=doctor_id, day_of_week=day_of_week).all()
-
-    print(f"Availabilities found: {len(availabilities)}")  # Mostrar la cantidad de disponibilidades encontradas
-
-    # Verificar cada disponibilidad
-    for availability in availabilities:
-        print(f"Availability: {availability.start_time} to {availability.end_time}")
-        print(f"Doctor ID: {doctor_id}, Date: {date_str}")
-        print(f"Parsed Date: {target_date}")
-        print(f"Day of Week: {day_of_week}")
-        print(f"Availabilities found: {len(availabilities)}")
 
     return jsonify([availability.serialize() for availability in availabilities]), 200
 
@@ -551,10 +566,17 @@ def update_weekly_availability(doctor_id, availability_id):
 
 
 @api.route('/availability', methods=['GET'])
-@jwt_required()
+@jwt_required(optional=True)
 def get_all_availabilities():
-    availabilities = WeeklyAvailability.query.all()
-    return jsonify([availability.serialize() for availability in availabilities]), 200
+    try:
+        availabilities = WeeklyAvailability.query.all()
+        if not availabilities:
+            return jsonify({"message": "No availability found"}), 404
+        return jsonify([availability.serialize() for availability in availabilities]), 200
+    except Exception as e:
+        print(f"Error retrieving availabilities: {e}")
+        return jsonify({"error": "Error fetching availabilities"}), 500
+
 
 
 

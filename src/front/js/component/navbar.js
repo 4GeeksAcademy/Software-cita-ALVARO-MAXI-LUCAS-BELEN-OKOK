@@ -22,7 +22,7 @@ export const CustomNavbar = () => {
           <Nav className="ml-auto text-uppercase">
             {location.pathname === "/admin" ? (
               <>
-                {/* Admin-specific links */}
+                {/* lINKS PARA EL ADMIN :) */}
                 <Nav.Link href="#dates-section" className="mx-3">
                   <FaCalendarAlt className="mr-1" /> Dates
                 </Nav.Link>
@@ -38,7 +38,7 @@ export const CustomNavbar = () => {
               </>
             ) : (
               <>
-                {/* Regular Navbar Links */}
+                {/* Nvbar regular */}
                 <Nav.Link href="/" className="mx-3">
                   <FaHome className="mr-1" /> Home
                 </Nav.Link>
@@ -57,7 +57,7 @@ export const CustomNavbar = () => {
               </>
             )}
 
-            {/* Conditional Rendering based on user's login status */}
+            {/* Condicional para el perfilo o logout */}
             {user ? (
               <>
                 <Nav.Link href="/dashboard" className="mx-3">

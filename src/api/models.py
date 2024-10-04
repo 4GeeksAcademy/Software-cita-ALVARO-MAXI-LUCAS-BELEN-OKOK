@@ -49,7 +49,7 @@ class Date(db.Model):
     datetime = db.Column(db.DateTime, nullable=False)  
     reason_for_appointment = db.Column(db.String(300), nullable=False)
     date_type = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Referencia al ID del usuario (paciente)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Referencia al ID del usuario (paciente)
 
     doctor = db.relationship('User', foreign_keys=[doctor_id], backref='appointments')  # Relación con el modelo User (doctor)
 
