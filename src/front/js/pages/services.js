@@ -44,7 +44,7 @@ export const Services = () => {
               <Card.Body>
                 <Card.Title>Tratamientos</Card.Title>
                 <Card.Text>
-                  Disponemos de tratamientos avanzados para diversas enfermedades oculares. 
+                  Nuestros tratamientos están diseñados no solo para corregir problemas de visión, sino también para mejorar su calidad de vida. Ofrecemos una amplia gama de servicios, desde exámenes de rutina hasta intervenciones quirúrgicas avanzadas, adaptados a las necesidades individuales de cada paciente.
                 </Card.Text>
                 <Link to="/services/3">
                   <Button variant="primary">Más Información</Button>
@@ -58,4 +58,4 @@ export const Services = () => {
   );
 };
 
-export default Services;
+export default Services;
